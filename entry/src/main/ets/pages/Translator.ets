@@ -1,5 +1,6 @@
 import { TransBox, defaultTransBoxList, TransParamsObj} from '../models/transBox'
 import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
+import { postTranslate } from '../tool/tanslateaxios';
 
 @Entry
 @Component
@@ -134,25 +135,8 @@ async function translate(message:string,mode:number): Promise<TransBox>{
 
   const  token = "lj1jbtel8gbhubdmg9dj"
   const  transParamsObj = createTransRequest(mode==0?"en2zh":"zh2en",message)
-  const trans:Promise<TransBox> = new Promise((resolve) => {
-    axios({
-        method:'post',
-        url:'http://api.interpreter.caiyunai.com/v1/translator',
-        headers : {"content-type" : "application/json",
-          "x-authorization": "token " + token},
-        data: transParamsObj
-      }).then((res: AxiosResponse) => {
-        let resp = {'origin': message,
-          'translation': res.data.target,
-          'mode': mode} as TransBox
-        resolve(resp);
-      }).catch((error: AxiosError) => {
-        console.error(JSON.stringify(error));
-        resolve({} as TransBox);
-      })
-  })
+  const trans:Promise<TransBox> = postTranslate(transParamsObj,token,message,mode)
   trans.then((value)=>{
-    console.log(JSON.stringify(value))
     return value
   })
   return trans

@@ -83,9 +83,9 @@ struct ChatDetail {
     .width('100%')
   }
 
-  submit(message:string){
+  async  submit(message:string){
     this.chatBoxList.push({id:"test",message:this.input,role:0})
-    const response:ChatBox = askGPT(message)
+    const response:ChatBox = await askGPT(message)
     console.log("submit:" + JSON.stringify(response))
     this.chatBoxList.push(response)
     AppStorage.setOrCreate("Chat" + "1" ,this.chatBoxList)
@@ -97,33 +97,33 @@ struct ChatDetail {
 
   }
 
-function askGPT(message:string):ChatBox{
+function askGPT(message:string):Promise<ChatBox>{
 
   const  chatParamsObj = createGPTRequest(message)
   console.log(JSON.stringify(chatParamsObj))
-  axios({
-    method:'post',
-    url:'https://api.chatanywhere.com.cn/v1/chat/completions',
-    headers : {"Content-Type" : "application/json",
-      "Authorization": "Bearer sk-vUdoqlqdODGulzVxiJPBShCdHHxRKWI4gjq0zG1TANm3hR70"},
-    data: chatParamsObj
-  }).then((res: AxiosResponse) => {
-    console.log("111")
-    let chat:ChatBox = {'id': "1",
-      'message': res.data.choices[0].message.content,
-      'role': 1} as ChatBox
-    console.log(JSON.stringify(chat))
-    console.log("112")
-    console.log('result:' + JSON.stringify(res));
-    return chat
-  }).catch((error: AxiosError) => {
-    console.log("113")
-    console.error(JSON.stringify(error));
-    return {} as ChatBox
+  const chat:Promise<ChatBox> = new Promise((resolve) => {
+    axios({
+      method:'post',
+      url:'https://api.chatanywhere.com.cn/v1/chat/completions',
+      headers : {"Content-Type" : "application/json",
+        "Authorization": "Bearer sk-vUdoqlqdODGulzVxiJPBShCdHHxRKWI4gjq0zG1TANm3hR70"},
+      data: chatParamsObj
+    }).then((res: AxiosResponse) => {
+      console.log("111")
+      let resp = {'id': "1",
+        'message': res.data.choices[0].message.content,
+        'role': 1} as ChatBox
+      resolve(resp)
+    }).catch((error: AxiosError) => {
+      console.error(JSON.stringify(error));
+      resolve({} as ChatBox)
+    })
   })
-  console.log("114")
-  return {} as ChatBox
-
+  chat.then((value)=>{
+    console.log(JSON.stringify(value))
+    return value
+  })
+  return chat
 }
 
 function createGPTRequest(message:string){

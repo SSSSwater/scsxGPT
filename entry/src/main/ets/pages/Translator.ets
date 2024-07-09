@@ -142,21 +142,16 @@ async function translate(message:string,mode:number): Promise<TransBox>{
           "x-authorization": "token " + token},
         data: transParamsObj
       }).then((res: AxiosResponse) => {
-        console.log("111")
         let resp = {'origin': message,
           'translation': res.data.target,
           'mode': mode} as TransBox
-        console.log("112")
-        console.log('result:' + JSON.stringify(trans));
         resolve(resp);
       }).catch((error: AxiosError) => {
-        console.log("113")
         console.error(JSON.stringify(error));
         resolve({} as TransBox);
       })
-  });
+  })
   trans.then((value)=>{
-    console.log("114")
     console.log(JSON.stringify(value))
     return value
   })

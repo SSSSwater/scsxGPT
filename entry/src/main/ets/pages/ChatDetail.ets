@@ -1,5 +1,7 @@
 import {ChatBox, ChatParamsObj, defaultChatBoxList} from '../models/chatBox'
 import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
+import { postGPT } from '../tool/tanslateaxios';
+
 @Entry
 @Component
 struct ChatDetail {
@@ -86,7 +88,6 @@ struct ChatDetail {
   async  submit(message:string){
     this.chatBoxList.push({id:"test",message:this.input,role:0})
     const response:ChatBox = await askGPT(message)
-    console.log("submit:" + JSON.stringify(response))
     this.chatBoxList.push(response)
     AppStorage.setOrCreate("Chat" + "1" ,this.chatBoxList)
   }
@@ -101,24 +102,7 @@ function askGPT(message:string):Promise<ChatBox>{
 
   const  chatParamsObj = createGPTRequest(message)
   console.log(JSON.stringify(chatParamsObj))
-  const chat:Promise<ChatBox> = new Promise((resolve) => {
-    axios({
-      method:'post',
-      url:'https://api.chatanywhere.com.cn/v1/chat/completions',
-      headers : {"Content-Type" : "application/json",
-        "Authorization": "Bearer sk-vUdoqlqdODGulzVxiJPBShCdHHxRKWI4gjq0zG1TANm3hR70"},
-      data: chatParamsObj
-    }).then((res: AxiosResponse) => {
-      console.log("111")
-      let resp = {'id': "1",
-        'message': res.data.choices[0].message.content,
-        'role': 1} as ChatBox
-      resolve(resp)
-    }).catch((error: AxiosError) => {
-      console.error(JSON.stringify(error));
-      resolve({} as ChatBox)
-    })
-  })
+  const chat:Promise<ChatBox> =postGPT(chatParamsObj,message)
   chat.then((value)=>{
     console.log(JSON.stringify(value))
     return value

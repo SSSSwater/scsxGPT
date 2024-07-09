@@ -158,7 +158,3 @@ function createTransRequest(precond:string,message:string){
   return transParamsObj
 
 }
-
-function requestSuccess(trans:TransBox){
-
-}

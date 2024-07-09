@@ -1,7 +1,7 @@
 export interface TransBox {
   origin: string
   translation: string
-  mode: number
+  mode: string
 }
 export interface TransParamsObj {
   source: string,
@@ -13,5 +13,5 @@ export const defaultTransBoxList: TransBox[] = [
   {
     "origin": "hello",
     "translation": "你好",
-    mode: 0
+    mode: "en2zh"
   }]

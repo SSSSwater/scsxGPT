@@ -1,12 +1,19 @@
 import { TransBox, defaultTransBoxList, TransParamsObj} from '../models/transBox'
 import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
-import { postTranslate } from '../tool/tanslateaxios';
+import { postTranslate } from '../tool/translateAxios';
+import { promptAction } from '@kit.ArkUI';
 
-@Entry
+@Extend(Span) function textCommon(grayAndItalic:boolean,size:number){
+  .fontSize(size)
+  .fontColor(grayAndItalic?Color.Gray:Color.Black)
+  .fontStyle(grayAndItalic?FontStyle.Italic:FontStyle.Normal)
+}
+
 @Component
-struct Translator {
+export struct TransComponent {
   @State input: string = "";
-  @State transMode: number = 0; // 0表示英译中，1表示中译英
+  @State transModeLeft: number = 1; //0中 1英 2日
+  @State transModeRight: number = 0;
   private scroller: Scroller = new Scroller(); // 创建一个滚动控制器
   @State transBoxList: TransBox[] = defaultTransBoxList;
 
@@ -14,36 +21,25 @@ struct Translator {
   transBoxBuilder(role:number,origin:string,translation:string){
     Text(){
       Span("原文:\n")
-        .fontSize(20)
-        .fontColor(Color.Gray)
-        .fontStyle(FontStyle.Italic)
+        .textCommon(true,20)
       Span(origin)
-        .fontSize(18)
-        .fontColor(Color.Gray)
-        .fontStyle(FontStyle.Italic)
+        .textCommon(true,18)
       Span("\n释义:\n")
-        .fontSize(20)
-        .fontColor(Color.Black)
-        .fontStyle(FontStyle.Italic)
+        .textCommon(false,20)
       Span(translation)
-        .fontSize(18)
-        .fontColor(Color.Black)
-        .fontStyle(FontStyle.Italic)
+        .textCommon(false,18)
     }
-      .fontSize(18)
-      .width('95%')
-      .borderRadius(20)
-      .backgroundColor(Color.White)
-      .margin({ top: 10 })
-      .alignSelf(ItemAlign.Center)
-      .backgroundColor(Color.White)
-      .fontColor(Color.Black)
-      .padding({
-        left: 10,
-        right: 10,
-        top: 15,
-        bottom: 15
-      })
+    .width('95%')
+    .borderRadius(20)
+    .backgroundColor(Color.White)
+    .margin({ top: 10 })
+    .alignSelf(ItemAlign.Center)
+    .padding({
+      left: 10,
+      right: 10,
+      top: 15,
+      bottom: 15
+    })
   }
   build() {
     RelativeContainer() {
@@ -71,6 +67,7 @@ struct Translator {
       .backgroundColor('#e8e8e4')
       .align(Alignment.Top)
 
+
       TextArea({ placeholder: "请输入想要翻译的内容：" })
         .width("100%")
         .height("20%")
@@ -92,32 +89,46 @@ struct Translator {
 
       Row() {
         Row(){
-          Select([{value:'英'},{value:'中'}])
-            .selected(0)
+          Select([{value:'中'},{value:'英'},{value:'日'}])
+            .selected(1)
             .value('英')
             .onSelect((index: number) => {
-              this.transMode = index
+              this.transModeLeft = index
             })
           Text("译")
-          Select([{value:'英'},{value:'中'}])
-            .selected(1)
+          Select([{value:'中'},{value:'英'},{value:'日'}])
+            .selected(0)
             .value('中')
             .onSelect((index: number) => {
-              this.transMode = index
+              this.transModeRight = index
             })
         }
         Button('Translation')
           .backgroundColor(Color.Pink)
           .width("50%")
           .onClick(() => {
-            this.submit(this.input,this.transMode)
+            if (this.transModeLeft == this.transModeRight){
+              promptAction.showToast({
+                message:'不能选同种语言',
+                duration:1600,
+                bottom:150}
+              )
+            } else if (this.transModeLeft * this.transModeRight !=0){
+              promptAction.showToast({
+                message:'暂不支持英日互译',
+                duration:1600,
+                bottom:150}
+              )
+            }else{
+              this.submit(this.input,this.transModeLeft,this.transModeRight)
+            }
           })
       }.justifyContent(FlexAlign.SpaceAround)
       .alignItems(VerticalAlign.Center)
       .width("100%")
       .height("10%")
       .alignRules({
-        bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
+        bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
       })
       .id("sendButton")
 
@@ -126,8 +137,11 @@ struct Translator {
     .width('100%')
   }
 
-  async submit(message: string, mode:number) {
-
+  async submit(message: string, modeLeft:number, modeRight:number) {
+    this.input = ""
+    const modeEnum:string[] = ['zh','en','ja']
+    const mode = modeEnum[modeLeft] + '2' + modeEnum[modeRight]
+    console.log(mode)
     const resp:TransBox =await translate(message,mode)
     console.log("submit:" + JSON.stringify(resp))
     this.transBoxList.push(resp)
@@ -138,10 +152,11 @@ struct Translator {
     this.transBoxList = AppStorage.get("Translation") || []
   }
 }
-async function translate(message:string,mode:number): Promise<TransBox>{
+
+async function translate(message:string,mode:string): Promise<TransBox>{
 
   const  token = "lj1jbtel8gbhubdmg9dj"
-  const  transParamsObj = createTransRequest(mode==0?"en2zh":"zh2en",message)
+  const  transParamsObj = createTransRequest(mode,message)
   const trans:Promise<TransBox> = postTranslate(transParamsObj,token,message,mode)
   trans.then((value)=>{
     return value

@@ -1,15 +1,14 @@
 import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
+import { ChatBox, ChatParamsObj } from '../models/chatBox'
 import { TransBox, defaultTransBoxList, TransParamsObj} from '../models/transBox'
-import {ChatBox, ChatParamsObj, defaultChatBoxList} from '../models/chatBox'
-
 //创建axios的实例
 const instance = axios.create({
   // baseURL: "http://47.95.4.181", //基路径，要看API帮助文档的特征来确定基路径
   baseURL: 'http://localhost:9527/',
   timeout: 5000, //请求超时的时间
 })
-//获取翻译
-export async function postTranslate (transParamsObj:TransParamsObj,token:string,message:string,mode:number): Promise<TransBox>{
+
+export async function postTranslate (transParamsObj:TransParamsObj,token:string,message:string,mode:string): Promise<TransBox>{
   return new Promise((resolve) => {
     axios({
       method:'post',
@@ -28,8 +27,6 @@ export async function postTranslate (transParamsObj:TransParamsObj,token:string,
     })
   })
 }
-//获取gpt的回复
-
 export async function postGPT (chatParamsObj:ChatParamsObj,message:string): Promise<ChatBox>{
   return new Promise((resolve) => {
     axios({

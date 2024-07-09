@@ -1,6 +1,5 @@
-import { TransBox, defaultTransBoxList,MessageModel,ParamsObj, TransParamsObj} from '../models/transBox'
-import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
-
+import { TransBox, defaultTransBoxList,MessageModel,ParamsObj, TransParamsObj} from '../models/transBox',
+import {postTranslate} from '../tool/tanslateaxios'
 @Entry
 @Component
 struct Translator {
@@ -130,35 +129,15 @@ struct Translator {
     this.transBoxList = AppStorage.get("Translation") || []
   }
 }
-function translate(message:string,mode:number):TransBox{
-
+function translate(message:string,mode:number){
   const  token = "3975l6lr5pcbvidl6jl2"
   const  transParamsObj = createTransRequest(mode==0?"en2zh":"zh2en",message)
   console.log(JSON.stringify(transParamsObj))
-  axios({
-    method:'post',
-    url:'http://api.interpreter.caiyunai.com/v1/translator',
-    headers : {"content-type" : "application/json",
-      "x-authorization": "token " + token},
-    data: transParamsObj
-  }).then((res: AxiosResponse) => {
-    console.log("111")
-    let trans:TransBox = {'origin': message,
-      'translation': res.data.target,
-      'mode': mode} as TransBox
-    console.log(JSON.stringify(trans))
-    console.log("112")
-    console.log('result:' + JSON.stringify(trans));
-    return trans
-  }).catch((error: AxiosError) => {
-    console.log("113")
-    console.error(JSON.stringify(error));
-    return {} as TransBox
-  })
   console.log("114")
-  return {} as TransBox
-
+  const req= postTranslate(transParamsObj,token,message,mode)
+  return req
 }
+
 function createTransRequest(precond:string,message:string){
   const transParamsObj: TransParamsObj = {
     "source": message,

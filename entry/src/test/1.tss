@@ -1,0 +1,29 @@
+
+function translate(message:string,mode:number):TransBox{
+
+  const  transParamsObj = createGPTRequest(mode==0?"en2zh":"zh2en",message)
+  console.log(JSON.stringify(transParamsObj))
+  axios({
+    method:'post',
+    url:'https://api.chatanywhere.com.cn/v1/chat/completions',
+    headers : {"Content-Type" : "application/json",
+      "Authorization": "Bearer sk-vUdoqlqdODGulzVxiJPBShCdHHxRKWI4gjq0zG1TANm3hR70"},
+    data: paramsObj
+  }).then((res: AxiosResponse) => {
+    console.log("111")
+    let trans:TransBox = {'origin': message,
+      'translation': res.data.choices[0].message.content,
+      'mode': mode} as TransBox
+    console.log(JSON.stringify(trans))
+    console.log("112")
+    console.log('result:' + JSON.stringify(res));
+    return trans
+  }).catch((error: AxiosError) => {
+    console.log("113")
+    console.error(JSON.stringify(error));
+    return {} as TransBox
+  })
+  console.log("114")
+  return {} as TransBox
+
+}

@@ -44,7 +44,7 @@ struct ChatDetail {
 
       TextArea({ placeholder: "请输入你想说的："})
         .width("100%")
-        .height("17%")
+        .height("15%")
         .fontSize(22)
         .fontColor(Color.Black)
         .fontStyle(FontStyle.Italic)
@@ -71,12 +71,12 @@ struct ChatDetail {
           })
       }
       .width("100%")
-      .height("5%")
+      .height("10%")
       .alignRules({
         bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
       })
       .justifyContent(FlexAlign.SpaceAround)
-      .margin({bottom:"5%"})
+      .alignItems(VerticalAlign.Center)
       .id("sendButton")
     }
     .height('100%')

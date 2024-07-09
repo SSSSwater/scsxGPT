@@ -72,7 +72,7 @@ struct Translator {
 
       TextArea({ placeholder: "请输入想要翻译的内容：" })
         .width("100%")
-        .height("22%")
+        .height("20%")
         .fontSize(22)
         .fontColor(Color.Black)
         .fontStyle(FontStyle.Italic)
@@ -90,27 +90,34 @@ struct Translator {
         .id('transInput')
 
       Row() {
-        Column(){
-          Toggle({ type: ToggleType.Switch })
-            .selectedColor(Color.Pink)
-            .onChange((isOn)=>{
-              this.transMode = isOn?1:0
+        Row(){
+          Select([{value:'英'},{value:'中'}])
+            .selected(0)
+            .value('英')
+            .onSelect((index: number) => {
+              this.transMode = index
             })
-          Text(this.transMode?"中译英":"英译中")
-        }.alignItems(HorizontalAlign.Center)
+          Text("译")
+          Select([{value:'英'},{value:'中'}])
+            .selected(1)
+            .value('中')
+            .onSelect((index: number) => {
+              this.transMode = index
+            })
+        }
         Button('Translation')
           .backgroundColor(Color.Pink)
-          .width("70%")
+          .width("50%")
           .onClick(() => {
             this.submit(this.input,this.transMode)
           })
       }.justifyContent(FlexAlign.SpaceAround)
+      .alignItems(VerticalAlign.Center)
       .width("100%")
-      .height("5%")
+      .height("10%")
       .alignRules({
         bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
       })
-      .margin({bottom:"5%"})
       .id("sendButton")
 
     }

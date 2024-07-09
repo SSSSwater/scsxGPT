@@ -4,6 +4,15 @@ export interface ChatBox {
   role: number //0表示自己说的,1表示gpt说的
 }
 
+export interface MessageModel {
+  role: string,
+  content: string
+}
+export interface ChatParamsObj {
+  model: string,
+  messages: MessageModel[]
+}
+
 export const defaultChatBoxList: ChatBox[] = [
   {
     "id": "aaa",

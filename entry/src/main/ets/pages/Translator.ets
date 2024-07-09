@@ -1,4 +1,4 @@
-import { TransBox, defaultTransBoxList,MessageModel,ParamsObj, TransParamsObj} from '../models/transBox'
+import { TransBox, defaultTransBoxList, TransParamsObj} from '../models/transBox'
 import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
 
 @Entry
@@ -118,9 +118,9 @@ struct Translator {
     .width('100%')
   }
 
-  submit(message: string, mode:number) {
+  async submit(message: string, mode:number) {
 
-    const resp:TransBox = translate(message,mode)
+    const resp:TransBox =await translate(message,mode)
     console.log("submit:" + JSON.stringify(resp))
     this.transBoxList.push(resp)
     AppStorage.setOrCreate("Translation" ,this.transBoxList)
@@ -130,34 +130,37 @@ struct Translator {
     this.transBoxList = AppStorage.get("Translation") || []
   }
 }
-function translate(message:string,mode:number):TransBox{
+async function translate(message:string,mode:number): Promise<TransBox>{
 
-  const  token = "3975l6lr5pcbvidl6jl2"
+  const  token = "lj1jbtel8gbhubdmg9dj"
   const  transParamsObj = createTransRequest(mode==0?"en2zh":"zh2en",message)
-  console.log(JSON.stringify(transParamsObj))
-  axios({
-    method:'post',
-    url:'http://api.interpreter.caiyunai.com/v1/translator',
-    headers : {"content-type" : "application/json",
-      "x-authorization": "token " + token},
-    data: transParamsObj
-  }).then((res: AxiosResponse) => {
-    console.log("111")
-    let trans:TransBox = {'origin': message,
-      'translation': res.data.target,
-      'mode': mode} as TransBox
-    console.log(JSON.stringify(trans))
-    console.log("112")
-    console.log('result:' + JSON.stringify(trans));
-    return trans
-  }).catch((error: AxiosError) => {
-    console.log("113")
-    console.error(JSON.stringify(error));
-    return {} as TransBox
+  const trans:Promise<TransBox> = new Promise((resolve) => {
+    axios({
+        method:'post',
+        url:'http://api.interpreter.caiyunai.com/v1/translator',
+        headers : {"content-type" : "application/json",
+          "x-authorization": "token " + token},
+        data: transParamsObj
+      }).then((res: AxiosResponse) => {
+        console.log("111")
+        let resp = {'origin': message,
+          'translation': res.data.target,
+          'mode': mode} as TransBox
+        console.log("112")
+        console.log('result:' + JSON.stringify(trans));
+        resolve(resp);
+      }).catch((error: AxiosError) => {
+        console.log("113")
+        console.error(JSON.stringify(error));
+        resolve({} as TransBox);
+      })
+  });
+  trans.then((value)=>{
+    console.log("114")
+    console.log(JSON.stringify(value))
+    return value
   })
-  console.log("114")
-  return {} as TransBox
-
+  return trans
 }
 function createTransRequest(precond:string,message:string){
   const transParamsObj: TransParamsObj = {
@@ -170,20 +173,6 @@ function createTransRequest(precond:string,message:string){
 
 }
 
-function createGPTRequest(precond:string,message:string){
-  const paramsObj: ParamsObj = {
-    "model": "gpt-3.5-turbo-1106",
-    "messages": [
-      {
-        "role": "system",
-        "content": precond
-      },
-      {
-        "role": "user",
-        "content": message
-      }
-    ]
-  }
-  return paramsObj
+function requestSuccess(trans:TransBox){
 
 }

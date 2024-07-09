@@ -1,13 +1,11 @@
-import {ChatBox, defaultChatBoxList} from '../models/chatBox'
-import { Chat, ChatRole, ChatMessage } from '@changwei/chatui'
-
+import {ChatBox, ChatParamsObj, defaultChatBoxList} from '../models/chatBox'
+import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
 @Entry
 @Component
 struct ChatDetail {
 
   @State input: string = "";
   private scroller: Scroller = new Scroller(); // 创建一个滚动控制器
-  private response: string = "";
   @State chatBoxList: ChatBox[]=defaultChatBoxList;
 
   @Builder
@@ -69,7 +67,6 @@ struct ChatDetail {
           .backgroundColor(Color.Pink)
           .width("90%")
           .onClick(()=>{
-            this.chatBoxList.push({id:"test",message:this.input,role:0})
             this.submit(this.input)
           })
       }
@@ -87,8 +84,10 @@ struct ChatDetail {
   }
 
   submit(message:string){
-    this.response = "我收到" + this.input
-    this.chatBoxList.push({id:"testAns",message:this.response,role:1})
+    this.chatBoxList.push({id:"test",message:this.input,role:0})
+    const response:ChatBox = askGPT(message)
+    console.log("submit:" + JSON.stringify(response))
+    this.chatBoxList.push(response)
     AppStorage.setOrCreate("Chat" + "1" ,this.chatBoxList)
   }
 
@@ -97,3 +96,46 @@ struct ChatDetail {
     }
 
   }
+
+function askGPT(message:string):ChatBox{
+
+  const  chatParamsObj = createGPTRequest(message)
+  console.log(JSON.stringify(chatParamsObj))
+  axios({
+    method:'post',
+    url:'https://api.chatanywhere.com.cn/v1/chat/completions',
+    headers : {"Content-Type" : "application/json",
+      "Authorization": "Bearer sk-vUdoqlqdODGulzVxiJPBShCdHHxRKWI4gjq0zG1TANm3hR70"},
+    data: chatParamsObj
+  }).then((res: AxiosResponse) => {
+    console.log("111")
+    let chat:ChatBox = {'id': "1",
+      'message': res.data.choices[0].message.content,
+      'role': 1} as ChatBox
+    console.log(JSON.stringify(chat))
+    console.log("112")
+    console.log('result:' + JSON.stringify(res));
+    return chat
+  }).catch((error: AxiosError) => {
+    console.log("113")
+    console.error(JSON.stringify(error));
+    return {} as ChatBox
+  })
+  console.log("114")
+  return {} as ChatBox
+
+}
+
+function createGPTRequest(message:string){
+  const chatParamsObj: ChatParamsObj = {
+    "model": "gpt-3.5-turbo-1106",
+    "messages": [
+      {
+        "role": "user",
+        "content": message
+      }
+    ]
+  }
+  return chatParamsObj
+
+}

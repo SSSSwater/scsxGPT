@@ -3,19 +3,11 @@ export interface TransBox {
   translation: string
   mode: number
 }
-export interface MessageModel {
-  role: string,
-  content: string
-}
 export interface TransParamsObj {
   source: string,
-  "trans_type": string,
-  "request_id": string,
-  "detect": boolean
-}
-export interface ParamsObj {
-  model: string,
-  messages: MessageModel[]
+  trans_type: string,
+  request_id: string,
+  detect: boolean
 }
 export const defaultTransBoxList: TransBox[] = [
   {

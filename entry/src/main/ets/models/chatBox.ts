@@ -1,5 +1,5 @@
 export interface ChatBox {
-  id: string
+  id: number
   message: string
   role: number //0表示自己说的,1表示gpt说的
 }
@@ -20,12 +20,12 @@ export interface ChatParamsObj {
 
 export const defaultChatBoxList: ChatBox[] = [
   {
-    "id": "aaa",
+    "id": 0,
     "message": "你好",
     "role": 0
   },
   {
-    "id": "bbb",
+    "id": 0,
     "message": "我是gpt",
     "role": 1
   }]

@@ -1,6 +1,7 @@
 import { ChatBox, ChatParamsObj, defaultChatBoxList, ChatStorage } from '../models/chatBox'
 import { postGPT } from '../tool/translateAxios';
 import { TitleBar } from './TitleBar';
+import { router } from '@kit.ArkUI';
 
 
 @Extend(Button) function contactButton(){
@@ -38,6 +39,7 @@ export struct ChatDetail {
   @State chatBoxList: ChatBox[] = defaultChatBoxList;
   // 聊天本地数据存储
   @State chatStorage: ChatStorage[] = [];
+
 
   @Builder
   chatBoxBuilder(role: number, content: string) {
@@ -123,6 +125,7 @@ export struct ChatDetail {
           }
           .onClick(() => {
             //搜索
+            router.pushUrl({url:"pages/search"})
           })
           .contactButton()
 
@@ -265,13 +268,13 @@ export struct ChatDetail {
     let tempChatBox = this.dataLoad(chatId)
     //放入发送消息
 
-    tempChatBox.push({ id: "test", message: message, role: 0 })
+    tempChatBox.push({ id: chatId, message: message, role: 0 })
     this.dataSave(chatId, tempChatBox)
     this.chatBoxList = this.dataLoad(this.chatId)
     this.input = ""
 
     //放入接接收消息
-    const response: ChatBox = await askGPT(message)
+    const response: ChatBox = await askGPT(message,chatId)
     tempChatBox.push(response)
     this.dataSave(chatId, tempChatBox)
     this.chatBoxList = this.dataLoad(this.chatId)
@@ -282,13 +285,16 @@ export struct ChatDetail {
     this.dataSave(0, defaultChatBoxList)
     this.chatIdList.push(0)
     this.chatBoxList = this.dataLoad(this.chatId)
+    // const  params = router.getParams(); // 获取传递过来的参数对象
+    // 获取id属性的值
+
   }
 
   //创建一个聊天页
   createChat() {
     const newId: number = getMaxId(this.chatIdList) + 1
     this.chatIdList.push(newId)
-    this.dataSave(newId, [{ id: "test", message: '你好请问有什么可以帮助您', role: 1 }] as ChatBox[])
+    this.dataSave(newId, [{ id: newId, message: '你好请问有什么可以帮助您', role: 1 }] as ChatBox[])
   }
 
   //chatBox上传到对应AppStorage中
@@ -296,6 +302,8 @@ export struct ChatDetail {
     AppStorage.setOrCreate("Chat" + chatId, chatBoxList)
     this.chatStorage[chatId] =
       { msgNum: chatBoxList.length, lastMsg: this.getLatestMsgFromData(chatBoxList), id: chatId }
+
+    AppStorage.setOrCreate("ChatList", this.chatIdList)
   }
 
   //返回AppStorage中的chatBox
@@ -311,10 +319,10 @@ export struct ChatDetail {
 }
 
 //请求GPT
-function askGPT(message: string): Promise<ChatBox> {
+function askGPT(message: string,id: number): Promise<ChatBox> {
 
   const chatParamsObj = createGPTRequest(message)
-  const chat: Promise<ChatBox> = postGPT(chatParamsObj, message)
+  const chat: Promise<ChatBox> = postGPT(chatParamsObj, message,id)
   chat.then((value) => {
     return value
   })

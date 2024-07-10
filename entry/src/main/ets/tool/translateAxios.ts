@@ -27,7 +27,7 @@ export async function postTranslate (transParamsObj:TransParamsObj,token:string,
     })
   })
 }
-export async function postGPT (chatParamsObj:ChatParamsObj,message:string): Promise<ChatBox>{
+export async function postGPT (chatParamsObj:ChatParamsObj,message:string,id:number): Promise<ChatBox>{
   return new Promise((resolve) => {
     axios({
       method:'post',
@@ -36,7 +36,7 @@ export async function postGPT (chatParamsObj:ChatParamsObj,message:string): Prom
         "Authorization": "Bearer sk-vUdoqlqdODGulzVxiJPBShCdHHxRKWI4gjq0zG1TANm3hR70"},
       data: chatParamsObj
     }).then((res: AxiosResponse) => {
-      let resp = {'id': "1",
+      let resp = {'id': id,
         'message': res.data.choices[0].message.content,
         'role': 1} as ChatBox
       resolve(resp)

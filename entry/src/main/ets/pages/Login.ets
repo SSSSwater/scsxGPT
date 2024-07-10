@@ -83,18 +83,20 @@ struct Login{
                 console.log("data.result",JSON.stringify(arr))
                 if(this.username==arr.username&&this.password==arr.userpass){
                   console.log("登录成功");
-                  console.log("from",(router.getParams() as IParams).from)
+                    promptAction.showToast({
+                      message:'登陆成功',
+                      duration:1600,
+                      bottom:150}
+                    )
                   // 跳转到我的页面。
-                  // router.back();
-                  router.pushUrl({
-                    url:(router.getParams() as IParams).from,
-                    params:{
-                      data:(router.getParams() as IParams).data
-                    }
-                  })
+                 router.pushUrl({url:"pages/Index"})//wait主页
+
                 }else{
-                  console.log("登录失败，用户名或密码不正确")
-                }
+                  promptAction.showToast({
+                    message:'密码或账号错误',
+                    duration:1600,
+                    bottom:150}
+                  )                }
               }else{
                 console.log("网络出错")
               }

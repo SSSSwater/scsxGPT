@@ -1,6 +1,7 @@
 import { ChatDetail } from '../components/ChatDetailComponent'
 import { TransComponent } from '../components/TransComponent'
 import { tabsModel } from '../models/tabsModel'
+import {inforComponent} from  '../components/InforComponent'
 @Entry
 @Component
 struct Index {
@@ -13,6 +14,8 @@ struct Index {
   currentTitle: string = '欢迎使用ChatGPT'
   @State
   message: string = '欢迎使用ChatGPT'
+  @State
+  GPT: number = 200//GPT次数
 
   @Builder
   tabBuilder(title: string, targetIndex: number, selectedImg: Resource, normalImg: Resource) {
@@ -27,6 +30,7 @@ struct Index {
     // 设置Column的宽高为100%，顶部边框，内容居中对齐
     .width('100%')
     .height('100%')
+
     .backgroundColor((this.currentIndex == targetIndex ? Color.Pink : Color.White))
     .border({ width: { top: 1 }, color: '#eee' })
     .justifyContent(FlexAlign.Center)
@@ -46,7 +50,6 @@ struct Index {
       }) {
         TabContent() {
           ChatDetail()
-
         }
         .tabBar(this.tabBuilder('聊天', 0, $r('app.media.chat_active'), $r('app.media.chat')))
         TabContent() {
@@ -54,7 +57,7 @@ struct Index {
         }.tabBar(this.tabBuilder('翻译', 1, $r('app.media.translate_active'), $r('app.media.translate')))
 
         TabContent() {
-
+          inforComponent({GPTremainder:this.GPT})
         }.tabBar(this.tabBuilder('我的', 2, $r('app.media.myself_active'), $r('app.media.myself')))
 
       }
@@ -70,8 +73,4 @@ struct Index {
     .height('100%')
     .width('100%')
   }
-}
-
-function Translator() {
-  throw new Error('Function not implemented.')
 }

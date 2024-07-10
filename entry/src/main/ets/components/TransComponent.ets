@@ -8,7 +8,7 @@ import { promptAction } from '@kit.ArkUI';
   .fontColor(grayAndItalic?Color.Gray:Color.Black)
   .fontStyle(grayAndItalic?FontStyle.Italic:FontStyle.Normal)
 }
-
+@Preview
 @Component
 export struct TransComponent {
   @State input: string = "";

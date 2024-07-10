@@ -3,8 +3,15 @@ import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
 import { postGPT } from '../tool/translateAxios';
 import { HashMap } from '@kit.ArkTS';
 
+
+@Entry
 @Component
 export struct ChatDetail {
+  @Styles
+  iconStyle(){
+    .width(20)
+    .height(20)
+  }
 
   @State chatId: number = 1;
   @State input: string = "";
@@ -12,6 +19,7 @@ export struct ChatDetail {
   @State chatBoxList: ChatBox[]=defaultChatBoxList;
   @State chatBoxStorage: HashMap<number,ChatBox[]>=AppStorage.get("Chat") || new HashMap<number,ChatBox[]>();
   @State chatBoxArray: ChatBoxStorage[] = mapToArray(this.chatBoxStorage)
+
 
   @Builder
   chatBoxBuilder(role:number,content:string){
@@ -38,9 +46,16 @@ export struct ChatDetail {
         Column(){
 
           Button({type: ButtonType.Normal}){
-            Text("创建新聊天")
-              .fontSize(25)
-              .alignSelf(ItemAlign.Start)
+            Row(){
+              Image($rawfile("ic_public_add.svg"))
+                .iconStyle()
+              Text("创建新聊天")
+                .fontSize(20)
+                .alignSelf(ItemAlign.Start)
+            }.width('50%')
+            .onClick(()=>{
+
+            })
           }
           .fontSize(20)
           .backgroundColor(Color.White)
@@ -74,7 +89,8 @@ export struct ChatDetail {
             Button({type: ButtonType.Normal}){
               Column(){
                 Text("记录数：" +item.chatList.length.toString())
-                  .fontSize(25)
+                  .fontSize(22)
+                  .height('30%')
                 Text(item.chatList[item.chatList.length-1].message)
                   .fontSize(20)
                   .fontColor(Color.Gray)

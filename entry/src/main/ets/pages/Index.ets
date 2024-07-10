@@ -1,5 +1,6 @@
+import { ChatDetail } from '../components/ChatDetailComponent'
+import { TransComponent } from '../components/TransComponent'
 import { tabsModel } from '../models/tabsModel'
-
 @Entry
 @Component
 struct Index {
@@ -35,6 +36,8 @@ struct Index {
 
   build() {
     Column() {
+      // 侧边栏
+
       // Tabs组件，用于展示多个Tab内容
       Tabs({
         barPosition: BarPosition.End,
@@ -42,12 +45,12 @@ struct Index {
         controller: this.controller
       }) {
         TabContent() {
+          ChatDetail()
 
         }
         .tabBar(this.tabBuilder('聊天', 0, $r('app.media.chat_active'), $r('app.media.chat')))
-
         TabContent() {
-
+          TransComponent()
         }.tabBar(this.tabBuilder('翻译', 1, $r('app.media.translate_active'), $r('app.media.translate')))
 
         TabContent() {
@@ -67,4 +70,8 @@ struct Index {
     .height('100%')
     .width('100%')
   }
+}
+
+function Translator() {
+  throw new Error('Function not implemented.')
 }

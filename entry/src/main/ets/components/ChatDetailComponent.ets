@@ -22,6 +22,7 @@ export struct ChatDetail {
   // 聊天本地数据存储数组
   @State chatBoxStorageArray: ChatBoxStorage[] = mapToArray(this.chatBoxStorage)
 
+  @Prop isShowSideBar:number
 
   @Builder
   chatBoxBuilder(role:number,content:string){
@@ -69,7 +70,7 @@ export struct ChatDetail {
   }
   build() {
 
-    SideBarContainer(SideBarContainerType.Overlay) {
+     SideBarContainer(SideBarContainerType.Overlay) {
       RelativeContainer() { //侧边栏
         Column(){
 

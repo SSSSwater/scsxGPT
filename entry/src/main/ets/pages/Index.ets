@@ -31,7 +31,7 @@ struct Index {
     .width('100%')
     .height('100%')
 
-    .backgroundColor((this.currentIndex == targetIndex ? Color.Pink : Color.White))
+    .backgroundColor((this.currentIndex == targetIndex ? '#007DFF' : Color.White))
     .border({ width: { top: 1 }, color: '#eee' })
     .justifyContent(FlexAlign.Center)
   }

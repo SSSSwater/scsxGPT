@@ -3,7 +3,8 @@
   "description": "Please describe the basic information.",
   "dependencies": {
     "@changwei/chatui": "^0.0.6",
-    "@ohos/axios": "^2.2.0"
+    "@ohos/axios": "^2.2.0",
+    "@ohos/pulltorefresh": "^2.0.5"
   },
   "devDependencies": {
     "@ohos/hypium": "1.0.18",

@@ -1,3 +1,5 @@
+import router from '@ohos.router';
+
 @Component export struct TitleBar {
 
   @Prop titleBarAttribute: TitleBarAttribute; // 定义标题栏属性
@@ -14,6 +16,9 @@
             .margin({left: 10})
             .onClick(() => {
               this.titleBarAttribute.backCallback() // 返回键点击事件回调
+              // router.pushUrl({
+              //   url: 'pages/Main'
+              // });
             })
         }
       }

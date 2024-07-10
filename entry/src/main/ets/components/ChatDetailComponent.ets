@@ -30,7 +30,7 @@ export struct ChatDetail {
   @Styles
   test(){
     .border({ width: 1 })
-    .backgroundColor(Color.Gray)
+    .backgroundColor('Color.Gray')
   }
   @Link GPTCost:number;
   @State isShowSideBar: boolean = false;
@@ -87,13 +87,12 @@ export struct ChatDetail {
         this.chatId = id
         this.chatBoxList = this.dataLoad(id)
         this.isShowSideBar = false
-        this.scroller.scrollEdge(Edge.Bottom,{velocity:9999})
-
       })
     }
     .width('90%')
     .height('20%')
     .backgroundColor(Color.White)
+    .border({ width: 2, color: '#007DFF',radius:10})
     .border({ width: 2, color: this.chatId==id?Color.Pink:Color.White,radius:10})
     .fontColor(Color.Black)
     .margin({top:10})
@@ -114,6 +113,7 @@ export struct ChatDetail {
               backCallback: () => { // 设置点击回调
                 console.log("shoudao!")
                 //返回主页
+                router.back();
               }
             }
           })
@@ -156,7 +156,7 @@ export struct ChatDetail {
         .height("60%")
 
       }
-      .backgroundColor('#f0f0ed')
+      .backgroundColor('#F1F3F5')
 
       //主界面
       Column() {
@@ -168,6 +168,7 @@ export struct ChatDetail {
             backCallback: () => { // 设置点击回调
               console.log("shoudao!")
               //返回主页
+              router.back();
             }
           }
         })
@@ -192,7 +193,7 @@ export struct ChatDetail {
             left: 10,
             right: 10
           })
-          .backgroundColor('#f0f0ed')
+          .backgroundColor('#F1F3F5')
           .align(Alignment.Top)
 
 
@@ -306,7 +307,7 @@ export struct ChatDetail {
     .onChange((value) => {this.isShowSideBar = value})
     .height('100%')
     .width('100%')
-    .backgroundColor('#e8e8e4')
+     .backgroundColor('#F1F3F5')
   }
 
   async submit(message: string, chatId: number) {

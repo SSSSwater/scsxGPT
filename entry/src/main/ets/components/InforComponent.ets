@@ -34,6 +34,9 @@ export struct inforComponent {
           backCallback: () => { // 设置点击回调
             console.log("shoudao!")
             //返回主页
+            router.pushUrl({
+              url: 'pages/Main'
+            });
           }
         }
       })

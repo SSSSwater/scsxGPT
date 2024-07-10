@@ -20,7 +20,10 @@ export struct search {
       RelativeContainer() {
         Image(role==0?$r('app.media.ic_public_contacts'):$r('app.media.ic_public_gpt'))
           .size({width:30,height:30})
-          .alignRules({left:{anchor:'__container__',align:HorizontalAlign.Start},top:{anchor:'__container__',align:VerticalAlign.Top}})
+          .alignRules({left:{anchor:'__container__',align:HorizontalAlign.Start},top:{anchor:'__container__',align:VerticalAlign.Top}}).offset({
+          x:-7,
+          y:-4
+        })
           .id('avatar')
         Text(msg)
           .width("80%")
@@ -47,7 +50,14 @@ export struct search {
     .fontColor(Color.Black)
     .margin({ top: 10 })
     .onClick(()=>{
-      router.back()
+      AlertDialog.show({
+        message:msg,
+        confirm: {
+          value: "好的",
+          action: () => {
+          }
+        }
+      })
     })
 
   }
@@ -75,6 +85,7 @@ export struct search {
               const chatIdList: number[] = AppStorage.get("ChatList") || []
               console.log(chatIdList.toString())
               this.lenth = chatIdList.length
+              this.chatBoxAll=[]
               chatIdList.forEach((item) => {
                 const chatBoxTemp = this.dataLoad(item)
                   chatBoxTemp.forEach(

@@ -1,10 +1,10 @@
-import {ChatBox, ChatParamsObj, defaultChatBoxList,ChatBoxStorage} from '../models/chatBox'
+import { ChatBox, ChatParamsObj, defaultChatBoxList, ChatStorage } from '../models/chatBox'
 import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
 import { postGPT } from '../tool/translateAxios';
 import { HashMap } from '@kit.ArkTS';
+import { TitleBar } from './TitleBar';
 
 
-@Entry
 @Component
 export struct ChatDetail {
   @Styles
@@ -13,201 +13,272 @@ export struct ChatDetail {
     .height(20)
   }
 
+  @Styles
+  test(){
+    .border({ width: 1 })
+    .backgroundColor(Color.Gray)
+  }
+
+  @State isShowSideBar: boolean = false;
   @State chatId: number = 0;
   @State input: string = "";
   private scroller: Scroller = new Scroller(); // 创建一个滚动控制器
-  @State chatBoxList: ChatBox[]=defaultChatBoxList;
+  @State chatIdList: number[] = [];
+  @State chatBoxList: ChatBox[] = defaultChatBoxList;
   // 聊天本地数据存储
-  @State chatBoxStorage: HashMap<number,ChatBox[]>=AppStorage.get("Chat") || new HashMap<number,ChatBox[]>();
-  // 聊天本地数据存储数组
-  @State chatBoxStorageArray: ChatBoxStorage[] = mapToArray(this.chatBoxStorage)
-
-  @Prop isShowSideBar:number
+  @State chatStorage: ChatStorage[] = [];
 
   @Builder
-  chatBoxBuilder(role:number,content:string){
+  chatBoxBuilder(role: number, content: string) {
     Text(content)
       .fontSize(18)
       .width('60%')
       .borderRadius(20)
       .backgroundColor(Color.White)
-      .margin({top: 10})
-      .alignSelf(role==0?ItemAlign.End:ItemAlign.Start)
-      .backgroundColor(role==0?"#3177e2":Color.White)
-      .fontColor(role==0?Color.White:Color.Black)
-      .padding({left:10,right:10,top:15,bottom:15})
+      .margin({ top: 10 })
+      .alignSelf(role == 0 ? ItemAlign.End : ItemAlign.Start)
+      .backgroundColor(role == 0 ? "#3177e2" : Color.White)
+      .fontColor(role == 0 ? Color.White : Color.Black)
+      .padding({
+        left: 10,
+        right: 10,
+        top: 15,
+        bottom: 15
+      })
   }
 
+  //侧边栏聊天页切换列表
   @Builder
-  chatListBuilder(msg:string, num:number, id:number){
-    Button({type: ButtonType.Normal}){
-      Column(){
+  chatListBuilder(msg: string, num: number, id: number) {
+    Button({ type: ButtonType.Normal }) {
+      Column() {
         Text(msg)
           .fontSize(22)
           .height('30%')
-          .textOverflow({overflow:TextOverflow.Ellipsis})
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
           .maxLines(1)
         Text("记录数：" + num)
           .fontSize(20)
           .fontColor(Color.Gray)
           .fontStyle(FontStyle.Italic)
           .height('70%')
-      }.padding(15)
+      }
+      .padding(15)
       .height('100%')
+      .width('100%')
       .alignItems(HorizontalAlign.Start)
-      .onClick(()=>{
+      .onClick(() => {
         this.chatId = id
-        console.log(this.chatId.toString())
-        // console.log(this.chatBoxStorage.get(this.chatId))
-        this.chatBoxList = this.chatBoxStorage.get(this.chatId)
+        this.chatBoxList = this.dataLoad(id)
+        this.isShowSideBar = false
       })
     }
     .width('100%')
     .height('20%')
     .backgroundColor(Color.White)
-    .border({width:{top:1,bottom:1},color:Color.Gray,radius:0})
+    .border({ width: { top: 1, bottom: 1 }, color: Color.Gray, radius: 0 })
     .fontColor(Color.Black)
   }
+
   build() {
 
-     SideBarContainer(SideBarContainerType.Overlay) {
-      RelativeContainer() { //侧边栏
-        Column(){
+    SideBarContainer(SideBarContainerType.Overlay) {
+      //侧边栏
+      RelativeContainer() {
+        Column() {
 
-          Button({type: ButtonType.Normal}){
-            Row(){
-              Image($rawfile("ic_public_add.svg"))
+          Button({ type: ButtonType.Normal }) {
+            Row() {
+              Image($r("app.media.ic_public_add"))
                 .iconStyle()
               Text("创建新聊天")
                 .fontSize(20)
                 .alignSelf(ItemAlign.Start)
-            }.width('50%')
-            .onClick(()=>{
-              let newId = getMaxId(this.chatBoxStorageArray)+1
-              this.dataSave(newId, [{id:"test",message:'你好请问有什么可以帮助您',role:1}] as ChatBox[])
+            }
+            .width('50%')
+            .onClick(() => {
+              // let newId = getMaxId(this.chatBoxStorageArray)+1
+              this.createChat()
             })
           }
+          .align(Alignment.Start)
+          .padding({ left: 20 })
           .fontSize(20)
           .backgroundColor(Color.White)
           .fontColor(Color.Black)
           .width('100%')
           .height('12%')
 
-          ForEach(this.chatBoxStorageArray, (item:ChatBoxStorage)=>{
-            this.chatListBuilder(item.chatList[item.chatList.length-1].message,item.chatList.length,item.id)
+          ForEach(this.chatStorage, (item: ChatStorage) => {
+
+            this.chatListBuilder(item.lastMsg, item.msgNum, item.id)
           })
         }
         .width("100%")
         .height("60%")
-        .margin({top:'50%'})
-
-        // ForEach(AppStorage.keys(), (box:ChatBox) => {      // ForEach语法循环创建子组件
-        //   this.chatBoxBuilder(box.role,box.message)
-        // })
+        .margin({ top: '50%' })
 
       }
       .backgroundColor(Color.White)
 
-      RelativeContainer() { //主界面
-        Scroll(this.scroller) {                  // 绑定滚动控制器
-          Column() {
-            ForEach(this.chatBoxList, (box:ChatBox) => {      // ForEach语法循环创建子组件
-              this.chatBoxBuilder(box.role,box.message)
+      //主界面
+      Column() {
+
+        TitleBar({
+          titleBarAttribute: {
+            title: "GPT聊天",
+            backShow: true, // 显示菜单
+            backCallback: () => { // 设置点击回调
+              console.log("shoudao!")
+              //返回主页
+            }
+          }
+        })
+        RelativeContainer() {
+          Scroll(this.scroller) { // 绑定滚动控制器
+            Column() {
+              ForEach(this.chatBoxList, (box: ChatBox) => { // ForEach语法循环创建子组件
+                this.chatBoxBuilder(box.role, box.message)
+              })
+            }
+            .width("100%")
+          }
+          .scrollable(ScrollDirection.Vertical) // 设置竖直方向滚动
+          .scrollBarColor(Color.Gray) // 设置滚动条颜色
+          .scrollBarWidth(10) // 设置滚动条宽度
+          .scrollBar(BarState.On) // 设置滚动条永久显示
+          .width('100%')
+          .height('75%')
+          .padding({
+            top: 10,
+            bottom: 10,
+            left: 10,
+            right: 10
+          })
+          .backgroundColor('#e8e8e4')
+          .align(Alignment.Top)
+
+          TextArea({ placeholder: "请输入你想说的：", text: this.input })
+            .width("100%")
+            .height("15%")
+            .fontSize(22)
+            .fontColor(Color.Black)
+            .fontStyle(FontStyle.Italic)
+            .placeholderColor(Color.Gray)
+            .placeholderFont({
+              size: 18,
+              style: FontStyle.Italic
             })
+            .onChange((msg) => {
+              this.input = msg;
+            })
+            .alignRules({
+              bottom: { anchor: 'sendButton', align: VerticalAlign.Top },
+            })
+            .id('chatInput')
+
+
+          Row() {
+            Button('Send')
+              .backgroundColor(Color.Pink)
+              .width("90%")
+              .onClick(() => {
+                this.submit(this.input, this.chatId)
+
+              })
           }
           .width("100%")
-        }
-        .scrollable(ScrollDirection.Vertical)    // 设置竖直方向滚动
-        .scrollBarColor(Color.Gray)             // 设置滚动条颜色
-        .scrollBarWidth(10)                      // 设置滚动条宽度
-        .scrollBar(BarState.On)                  // 设置滚动条永久显示
-        .width('100%')
-        .height('75%')
-        .padding({top: 10, bottom: 10, left: 10, right:10})
-        .backgroundColor('#e8e8e4')
-        .align(Alignment.Top)
-
-        TextArea({ placeholder: "请输入你想说的："})
-          .width("100%")
-          .height("15%")
-          .fontSize(22)
-          .fontColor(Color.Black)
-          .fontStyle(FontStyle.Italic)
-          .placeholderColor(Color.Gray)
-          .placeholderFont({
-            size: 18,
-            style: FontStyle.Italic
-          })
-          .onChange((msg) => {
-            this.input = msg;
-          })
+          .height("10%")
           .alignRules({
-            bottom: { anchor: 'sendButton', align: VerticalAlign.Top },
+            bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
           })
-          .id('chatInput')
-
-
-        Row(){
-          Button('Send')
-            .backgroundColor(Color.Pink)
-            .width("90%")
-            .onClick(()=>{
-              this.submit(this.input)
-
-            })
+          .justifyContent(FlexAlign.SpaceAround)
+          .alignItems(VerticalAlign.Center)
+          .id("sendButton")
         }
-        .width("100%")
-        .height("10%")
-        .alignRules({
-          bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
-        })
-        .justifyContent(FlexAlign.SpaceAround)
-        .alignItems(VerticalAlign.Center)
-        .id("sendButton")
+        .height('90%')
+        .width('100%')
       }
-      .height('100%')
-      .width('100%')
+
     }
-    .showSideBar(false)
+    .controlButton({
+      top: 20,
+      icons: {
+        shown: $r("app.media.ic_public_history"),
+        hidden: $r("app.media.ic_public_history"),
+        switching: $r("app.media.ic_public_history")
+      }
+    })
+    .sideBarPosition(SideBarPosition.End)
+    .showSideBar(this.isShowSideBar)
     .height('100%')
     .width('100%')
+    .onChange((value) => {this.isShowSideBar = value})
   }
 
-  async submit(message:string){
+  async submit(message: string, chatId: number) {
+
+    let tempChatBox = this.dataLoad(chatId)
     //放入发送消息
-    this.chatBoxList.push({id:"test",message:message,role:0})
-    this.dataSave(this.chatId, this.chatBoxList)
+
+    tempChatBox.push({ id: "test", message: message, role: 0 })
+    this.dataSave(chatId, tempChatBox)
+    this.chatBoxList = this.dataLoad(this.chatId)
+    this.input = ""
+
     //放入接接收消息
-    const response:ChatBox = await askGPT(message)
-    this.chatBoxList.push(response)
-    this.dataSave(this.chatId, this.chatBoxList)
+    const response: ChatBox = await askGPT(message)
+    tempChatBox.push(response)
+    this.dataSave(chatId, tempChatBox)
+    this.chatBoxList = this.dataLoad(this.chatId)
+
   }
 
   aboutToAppear(): void {
-    this.dataSave(0,defaultChatBoxList)
-    // AppStorage.setOrCreate("Chat" ,this.chatBoxStorage)
-    // this.chatBoxStorage = AppStorage.get("Chat") || new HashMap()
-    // this.chatBoxList = this.chatBoxStorage.get(this.chatId)
+    this.dataSave(0, defaultChatBoxList)
+    this.chatIdList.push(0)
+    this.chatBoxList = this.dataLoad(this.chatId)
   }
 
-  dataSave(chatId:number,chatBoxList:ChatBox[]){
-    this.chatBoxStorage.set(chatId, chatBoxList)
-    AppStorage.setOrCreate("Chat" ,this.chatBoxStorage)
-    this.chatBoxStorageArray = mapToArray(this.chatBoxStorage)
+  //创建一个聊天页
+  createChat() {
+    const newId: number = getMaxId(this.chatIdList) + 1
+    this.chatIdList.push(newId)
+    this.dataSave(newId, [{ id: "test", message: '你好请问有什么可以帮助您', role: 1 }] as ChatBox[])
+  }
+
+  //chatBox上传到对应AppStorage中
+  dataSave(chatId: number, chatBoxList: ChatBox[]) {
+    AppStorage.setOrCreate("Chat" + chatId, chatBoxList)
+    this.chatStorage[chatId] =
+      { msgNum: chatBoxList.length, lastMsg: this.getLatestMsgFromData(chatBoxList), id: chatId }
+  }
+
+  //返回AppStorage中的chatBox
+  dataLoad(chatId: number): ChatBox[] {
+    const res: ChatBox[] = AppStorage.get("Chat" + chatId) || []
+    return res
+  }
+
+  //从chatBox中获得最新消息
+  getLatestMsgFromData(chatBoxList: ChatBox[]) {
+    return chatBoxList[chatBoxList.length-1].message
   }
 }
 
-function askGPT(message:string):Promise<ChatBox>{
+//请求GPT
+function askGPT(message: string): Promise<ChatBox> {
 
-  const  chatParamsObj = createGPTRequest(message)
-  const chat:Promise<ChatBox> =postGPT(chatParamsObj,message)
-  chat.then((value)=>{
+  const chatParamsObj = createGPTRequest(message)
+  const chat: Promise<ChatBox> = postGPT(chatParamsObj, message)
+  chat.then((value) => {
     return value
   })
   return chat
 }
 
-function createGPTRequest(message:string){
+//包装GPT请求
+function createGPTRequest(message: string) {
   const chatParamsObj: ChatParamsObj = {
     "model": "gpt-3.5-turbo-1106",
     "messages": [
@@ -221,21 +292,11 @@ function createGPTRequest(message:string){
 
 }
 
-//本地存储聊天记录HashMap转Array
-function mapToArray(chatBoxStorage:HashMap<number,ChatBox[]>){
-  let chatList:ChatBoxStorage[] = []
-  chatBoxStorage.forEach((v,k)=>{
-    const item:ChatBoxStorage = {"id":k, "chatList":v} as ChatBoxStorage
-    chatList.push({"id":k, "chatList":v} as ChatBoxStorage)
-  })
-  return chatList
-}
-
 //获取聊天页最高id
-function getMaxId(storage: ChatBoxStorage[]){
+function getMaxId(idList: number[]) {
   let maxId: number = -1
-  storage.forEach((item:ChatBoxStorage)=>{
-    maxId = item.id>maxId?item.id:maxId
+  idList.forEach((item: number) => {
+    maxId = item > maxId ? item : maxId
   })
   return maxId
 }

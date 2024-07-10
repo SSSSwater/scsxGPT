@@ -3,12 +3,12 @@ export interface ChatBox {
   message: string
   role: number //0表示自己说的,1表示gpt说的
 }
-export interface ChatBoxStorage {
-  id: number
-  chatList: ChatBox[]
+
+export interface ChatStorage {
+  id : number,
+  msgNum: number,
+  lastMsg: string
 }
-
-
 export interface MessageModel {
   role: string,
   content: string

@@ -13,12 +13,14 @@ export struct ChatDetail {
     .height(20)
   }
 
-  @State chatId: number = 1;
+  @State chatId: number = 0;
   @State input: string = "";
   private scroller: Scroller = new Scroller(); // 创建一个滚动控制器
   @State chatBoxList: ChatBox[]=defaultChatBoxList;
+  // 聊天本地数据存储
   @State chatBoxStorage: HashMap<number,ChatBox[]>=AppStorage.get("Chat") || new HashMap<number,ChatBox[]>();
-  @State chatBoxArray: ChatBoxStorage[] = mapToArray(this.chatBoxStorage)
+  // 聊天本地数据存储数组
+  @State chatBoxStorageArray: ChatBoxStorage[] = mapToArray(this.chatBoxStorage)
 
 
   @Builder
@@ -36,8 +38,34 @@ export struct ChatDetail {
   }
 
   @Builder
-  chatListBuilder(id:string){
-
+  chatListBuilder(msg:string, num:number, id:number){
+    Button({type: ButtonType.Normal}){
+      Column(){
+        Text(msg)
+          .fontSize(22)
+          .height('30%')
+          .textOverflow({overflow:TextOverflow.Ellipsis})
+          .maxLines(1)
+        Text("记录数：" + num)
+          .fontSize(20)
+          .fontColor(Color.Gray)
+          .fontStyle(FontStyle.Italic)
+          .height('70%')
+      }.padding(15)
+      .height('100%')
+      .alignItems(HorizontalAlign.Start)
+      .onClick(()=>{
+        this.chatId = id
+        console.log(this.chatId.toString())
+        // console.log(this.chatBoxStorage.get(this.chatId))
+        this.chatBoxList = this.chatBoxStorage.get(this.chatId)
+      })
+    }
+    .width('100%')
+    .height('20%')
+    .backgroundColor(Color.White)
+    .border({width:{top:1,bottom:1},color:Color.Gray,radius:0})
+    .fontColor(Color.Black)
   }
   build() {
 
@@ -54,7 +82,8 @@ export struct ChatDetail {
                 .alignSelf(ItemAlign.Start)
             }.width('50%')
             .onClick(()=>{
-
+              let newId = getMaxId(this.chatBoxStorageArray)+1
+              this.dataSave(newId, [{id:"test",message:'你好请问有什么可以帮助您',role:1}] as ChatBox[])
             })
           }
           .fontSize(20)
@@ -63,46 +92,8 @@ export struct ChatDetail {
           .width('100%')
           .height('12%')
 
-          Button({type: ButtonType.Normal}){
-            Column(){
-              Text("记录数：1")
-                .fontSize(22)
-                .height('30%')
-              Text("sdsdsdsdsdsdsdssdsds")
-                .fontSize(20)
-                .fontColor(Color.Gray)
-                .fontStyle(FontStyle.Italic)
-                .textOverflow({overflow:TextOverflow.Ellipsis})
-                .maxLines(1)
-                .height('70%')
-            }.padding(15)
-            .height('100%')
-            .alignItems(HorizontalAlign.Start)
-          }
-          .width('100%')
-          .height('20%')
-          .backgroundColor(Color.White)
-          .border({width:{top:1,bottom:1},color:Color.Gray,radius:0})
-          .fontColor(Color.Black)
-
-          ForEach(this.chatBoxArray, (item:ChatBoxStorage)=>{
-            Button({type: ButtonType.Normal}){
-              Column(){
-                Text("记录数：" +item.chatList.length.toString())
-                  .fontSize(22)
-                  .height('30%')
-                Text(item.chatList[item.chatList.length-1].message)
-                  .fontSize(20)
-                  .fontColor(Color.Gray)
-                  .fontStyle(FontStyle.Italic)
-              }.padding(15)
-              .alignItems(HorizontalAlign.Start)
-            }
-            .width('100%')
-            .height('30%')
-            .backgroundColor(Color.White)
-            .border({width:{top:1,bottom:1},color:Color.Gray,radius:0})
-            .fontColor(Color.Black)
+          ForEach(this.chatBoxStorageArray, (item:ChatBoxStorage)=>{
+            this.chatListBuilder(item.chatList[item.chatList.length-1].message,item.chatList.length,item.id)
           })
         }
         .width("100%")
@@ -161,6 +152,7 @@ export struct ChatDetail {
             .width("90%")
             .onClick(()=>{
               this.submit(this.input)
+
             })
         }
         .width("100%")
@@ -181,26 +173,27 @@ export struct ChatDetail {
   }
 
   async submit(message:string){
-    console.log(message)
+    //放入发送消息
     this.chatBoxList.push({id:"test",message:message,role:0})
-    this.chatBoxStorage.set(this.chatId, this.chatBoxList)
-    AppStorage.setOrCreate("Chat" ,this.chatBoxStorage)
+    this.dataSave(this.chatId, this.chatBoxList)
+    //放入接接收消息
     const response:ChatBox = await askGPT(message)
     this.chatBoxList.push(response)
-    AppStorage.setOrCreate("Chat" ,this.chatBoxStorage)
-    // const chat:HashMap<number,ChatBox[]> = AppStorage.get("Chat") || new HashMap()
-    // console.log(chat.get(this.chatId)[1].message)
-    this.chatBoxStorage.set(this.chatId, this.chatBoxList)
-    this.chatBoxArray = mapToArray(this.chatBoxStorage)
-    console.log(this.chatBoxStorage.get(1).length.toString())
+    this.dataSave(this.chatId, this.chatBoxList)
   }
 
   aboutToAppear(): void {
+    this.dataSave(0,defaultChatBoxList)
     // AppStorage.setOrCreate("Chat" ,this.chatBoxStorage)
     // this.chatBoxStorage = AppStorage.get("Chat") || new HashMap()
     // this.chatBoxList = this.chatBoxStorage.get(this.chatId)
   }
 
+  dataSave(chatId:number,chatBoxList:ChatBox[]){
+    this.chatBoxStorage.set(chatId, chatBoxList)
+    AppStorage.setOrCreate("Chat" ,this.chatBoxStorage)
+    this.chatBoxStorageArray = mapToArray(this.chatBoxStorage)
+  }
 }
 
 function askGPT(message:string):Promise<ChatBox>{
@@ -227,13 +220,21 @@ function createGPTRequest(message:string){
 
 }
 
+//本地存储聊天记录HashMap转Array
 function mapToArray(chatBoxStorage:HashMap<number,ChatBox[]>){
   let chatList:ChatBoxStorage[] = []
   chatBoxStorage.forEach((v,k)=>{
     const item:ChatBoxStorage = {"id":k, "chatList":v} as ChatBoxStorage
-
-    console.log(item.id.toString() + item.chatList.length.toString())
     chatList.push({"id":k, "chatList":v} as ChatBoxStorage)
   })
   return chatList
+}
+
+//获取聊天页最高id
+function getMaxId(storage: ChatBoxStorage[]){
+  let maxId: number = -1
+  storage.forEach((item:ChatBoxStorage)=>{
+    maxId = item.id>maxId?item.id:maxId
+  })
+  return maxId
 }

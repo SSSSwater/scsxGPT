@@ -3,6 +3,20 @@ import { postGPT } from '../tool/translateAxios';
 import { TitleBar } from './TitleBar';
 
 
+@Extend(Button) function contactButton(){
+  .align(Alignment.Start)
+  .padding({ left: 20 })
+  .fontSize(20)
+  .backgroundColor(Color.White)
+  .fontColor(Color.Black)
+  .width('90%')
+  .height('12%')
+  .backgroundColor(Color.White)
+  .border({radius:10})
+  .fontColor(Color.Black)
+  .margin({top:10})
+}
+
 @Component
 export struct ChatDetail {
   @Styles
@@ -16,7 +30,6 @@ export struct ChatDetail {
     .border({ width: 1 })
     .backgroundColor(Color.Gray)
   }
-
   @State isShowSideBar: boolean = false;
   @State chatId: number = 0;
   @State input: string = "";
@@ -98,6 +111,26 @@ export struct ChatDetail {
               }
             }
           })
+
+          Button({ type: ButtonType.Normal }) {
+            Row() {
+              Image($r("app.media.ic_public_search"))
+                .iconStyle()
+              Text("搜索")
+                .fontSize(20)
+                .alignSelf(ItemAlign.Start)
+            }
+          }
+          .onClick(() => {
+            //搜索
+          })
+          .contactButton()
+
+          ForEach(this.chatStorage, (item: ChatStorage) => {
+
+            this.chatListBuilder(item.lastMsg, item.msgNum, item.id)
+          })
+
           Button({ type: ButtonType.Normal }) {
             Row() {
               Image($r("app.media.ic_public_add"))
@@ -106,27 +139,11 @@ export struct ChatDetail {
                 .fontSize(20)
                 .alignSelf(ItemAlign.Start)
             }
-            .onClick(() => {
-              this.createChat()
-            })
           }
-          .align(Alignment.Start)
-          .padding({ left: 20 })
-          .fontSize(20)
-          .backgroundColor(Color.White)
-          .fontColor(Color.Black)
-          .width('90%')
-          .height('12%')
-          .backgroundColor(Color.White)
-          .border({radius:10})
-          .fontColor(Color.Black)
-          .fontFamily('dx')
-          .margin({top:10})
-
-          ForEach(this.chatStorage, (item: ChatStorage) => {
-
-            this.chatListBuilder(item.lastMsg, item.msgNum, item.id)
+          .onClick(() => {
+            this.createChat()
           })
+          .contactButton()
         }
         .width("100%")
         .height("60%")

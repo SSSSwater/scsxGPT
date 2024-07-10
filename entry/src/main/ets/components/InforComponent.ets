@@ -1,4 +1,5 @@
 import { router } from '@kit.ArkUI';
+import { TitleBar } from './TitleBar';
 
 interface GenderOption {
   value: string;
@@ -24,18 +25,18 @@ export struct inforComponent {
 
   build() {
     Column() {
-      // 顶部导航栏
-      Row() {
-        Image($rawfile('back.png'))
-          .width(24).height(24)
-        Text('个人信息')
-          .fontSize(18)
-          .fontWeight(FontWeight.Medium)
-      }
-      .width('100%')
-      .height(56)
-      .padding({ left: 18, right: 16 })
-      .backgroundColor(Color.White)
+
+
+      TitleBar({
+        titleBarAttribute: {
+          title: "个人信息",
+          backShow: true, // 显示菜单
+          backCallback: () => { // 设置点击回调
+            console.log("shoudao!")
+            //返回主页
+          }
+        }
+      })
 
       // 内容区域
       List() {
@@ -133,22 +134,3 @@ export struct inforComponent {
       .backgroundColor('#F1F3F5')
     }
   }
-
-
-@Component
-struct TitleBar {
-  private title: string = ''
-
-  build() {
-    Row() {
-
-      Text(this.title)
-        .fontSize(18)
-        .fontWeight(FontWeight.Bold)
-    }
-    .width('100%')
-    .height(56)
-    .padding({ left: 16, right: 16 })
-    .backgroundColor(Color.White)
-  }
-}

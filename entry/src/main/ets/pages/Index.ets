@@ -15,7 +15,7 @@ struct Index {
   @State
   message: string = '欢迎使用ChatGPT'
   @State
-  GPT: number = 200//GPT次数
+  GPT: number = 50//GPT次数
 
   @Builder
   tabBuilder(title: string, targetIndex: number, selectedImg: Resource, normalImg: Resource) {
@@ -49,11 +49,11 @@ struct Index {
         controller: this.controller
       }) {
         TabContent() {
-          ChatDetail()
+          ChatDetail({GPTCost:this.GPT})
         }
         .tabBar(this.tabBuilder('聊天', 0, $r('app.media.chat_active'), $r('app.media.chat')))
         TabContent() {
-          TransComponent()
+          TransComponent({GPTCost:this.GPT})
         }.tabBar(this.tabBuilder('翻译', 1, $r('app.media.translate_active'), $r('app.media.translate')))
 
         TabContent() {

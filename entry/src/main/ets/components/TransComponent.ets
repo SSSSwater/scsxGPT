@@ -1,8 +1,8 @@
 import { TransBox, defaultTransBoxList, TransParamsObj} from '../models/transBox'
-import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
 import { postTranslate } from '../tool/translateAxios';
 import { promptAction } from '@kit.ArkUI';
 import { TitleBar } from './TitleBar';
+import { it } from '@ohos/hypium';
 
 @Extend(Span) function textCommon(grayAndItalic:boolean,size:number){
   .fontSize(size)
@@ -12,11 +12,35 @@ import { TitleBar } from './TitleBar';
 
 @Component
 export struct TransComponent {
+  @Link GPTCost:number;
   @State input: string = "";
   @State transModeLeft: number = 1; //0中 1英 2日
   @State transModeRight: number = 0;
   private scroller: Scroller = new Scroller(); // 创建一个滚动控制器
   @State transBoxList: TransBox[] = defaultTransBoxList;
+
+  @Builder
+  modeSelector(){
+    Row({space:5}){
+      Select([{value:'中'},{value:'英'},{value:'日'}])
+        .selected(1)
+        .value('英')
+        .onSelect((index: number) => {
+          this.transModeLeft = index
+        })
+      Text("译")
+      Select([{value:'中'},{value:'英'},{value:'日'}])
+        .selected(0)
+        .value('中')
+        .onSelect((index: number) => {
+          this.transModeRight = index
+        })
+    }
+    .margin({left:15})
+    .height('100%')
+    .width('50%')
+
+  }
 
   @Builder
   transBoxBuilder(role:number,origin:string,translation:string){
@@ -68,7 +92,7 @@ export struct TransComponent {
         .scrollable(ScrollDirection.Vertical) // 设置竖直方向滚动
         .scrollBarColor(Color.Gray) // 设置滚动条颜色
         .scrollBarWidth(10) // 设置滚动条宽度
-        .scrollBar(BarState.On) // 设置滚动条永久显示
+        .scrollBar(BarState.On) // 永久设置滚动条显示
         .width('100%')
         .height('75%')
         .padding({
@@ -77,26 +101,26 @@ export struct TransComponent {
           left: 10,
           right: 10
         })
-        .backgroundColor('#e8e8e4')
+        .backgroundColor('#f0f0ed')
         .align(Alignment.Top)
 
-        Column(){
-          Row({space:5}){
-              Select([{value:'中'},{value:'英'},{value:'日'}])
-                .selected(1)
-                .value('英')
-                .onSelect((index: number) => {
-                  this.transModeLeft = index
-                })
-              Text("译")
-              Select([{value:'中'},{value:'英'},{value:'日'}])
-                .selected(0)
-                .value('中')
-                .onSelect((index: number) => {
-                  this.transModeRight = index
-                })
+        RelativeContainer(){
+          RelativeContainer(){
+
+            this.modeSelector()
+            Column(){
+              Text("消耗额度:1")
+              Text("可用额度:" + this.GPTCost)
             }
-            .height('30%')
+            .alignRules({
+              right: { anchor: '__container__', align: HorizontalAlign.End }
+            })
+            .alignItems(HorizontalAlign.Start)
+            .justifyContent(FlexAlign.SpaceAround)
+            .width('30%')
+            .height('100%')
+          }
+          .height('40%')
 
           Stack({alignContent:Alignment.End}) {
             Row(){
@@ -148,18 +172,31 @@ export struct TransComponent {
                   bottom:150}
                 )
               }else{
-                this.submit(this.input,this.transModeLeft,this.transModeRight)
+                if (this.input == '') {
+                  promptAction.showToast({
+                    message: '输入不能为空!',
+                    duration: 1600,
+                    bottom: 150
+                  })
+                }else{
+                  if(this.GPTCost< 1){
+                    promptAction.showToast({
+                      message:'免费版额度已用完!请支持专业版',
+                      duration:1600,
+                      bottom:150})
+                  } else{
+                    this.submit(this.input,this.transModeLeft,this.transModeRight)
+                  }
+                  }
               }
             })
 
           }
-          .width("100%")
-          .height("70%")
           .alignRules({
             bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
           })
-          // .justifyContent(FlexAlign.SpaceAround)
-          // .alignItems(VerticalAlign.Center)
+          .width("100%")
+          .height("60%")
           .id("sendButton")
         }
         .width("100%")
@@ -167,83 +204,20 @@ export struct TransComponent {
         .alignRules({
           bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
         })
-        //
-        // TextArea({ placeholder: "请输入想要翻译的内容：" })
-        //   .width("100%")
-        //   .height("20%")
-        //   .fontSize(22)
-        //   .fontColor(Color.Black)
-        //   .fontStyle(FontStyle.Italic)
-        //   .placeholderColor(Color.Gray)
-        //   .placeholderFont({
-        //     size: 18,
-        //     style: FontStyle.Italic
-        //   })
-        //   .onChange((msg) => {
-        //     this.input = msg;
-        //   })
-        //   .alignRules({
-        //     bottom: { anchor: 'sendButton', align: VerticalAlign.Top },
-        //   })
-        //   .id('transInput')
-        //
-        // Row() {
-        //   Row(){
-        //     Select([{value:'中'},{value:'英'},{value:'日'}])
-        //       .selected(1)
-        //       .value('英')
-        //       .onSelect((index: number) => {
-        //         this.transModeLeft = index
-        //       })
-        //     Text("译")
-        //     Select([{value:'中'},{value:'英'},{value:'日'}])
-        //       .selected(0)
-        //       .value('中')
-        //       .onSelect((index: number) => {
-        //         this.transModeRight = index
-        //       })
-        //   }
-        //   Button('Translation')
-        //     .backgroundColor(Color.Pink)
-        //     .width("50%")
-        //     .onClick(() => {
-        //       if (this.transModeLeft == this.transModeRight){
-        //         promptAction.showToast({
-        //           message:'不能选同种语言',
-        //           duration:1600,
-        //           bottom:150}
-        //         )
-        //       } else if (this.transModeLeft * this.transModeRight !=0){
-        //         promptAction.showToast({
-        //           message:'暂不支持英日互译',
-        //           duration:1600,
-        //           bottom:150}
-        //         )
-        //       }else{
-        //         this.submit(this.input,this.transModeLeft,this.transModeRight)
-        //       }
-        //     })
-        // }
-        // .justifyContent(FlexAlign.SpaceAround)
-        // .alignItems(VerticalAlign.Center)
-        // .width("100%")
-        // .height("10%")
-        // .alignRules({
-        //   bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
-        // })
-        // .id("sendButton")
-
       }
       .height('90%')
+      .width('100%')
     }
-
-    .backgroundColor('#e8e8e4')
     .height('100%')
     .width('100%')
+    .backgroundColor('#e8e8e4')
   }
 
   async submit(message: string, modeLeft:number, modeRight:number) {
+
+    this.GPTCost -= 1;
     this.input = ""
+    this.scroller.scrollEdge(Edge.Bottom)
     const modeEnum:string[] = ['zh','en','ja']
     const mode = modeEnum[modeLeft] + '2' + modeEnum[modeRight]
     console.log(mode)
@@ -251,6 +225,7 @@ export struct TransComponent {
     console.log("submit:" + JSON.stringify(resp))
     this.transBoxList.push(resp)
     AppStorage.setOrCreate("Translation" ,this.transBoxList)
+    this.scroller.scrollEdge(Edge.Bottom)
   }
 
   aboutToAppear(): void {

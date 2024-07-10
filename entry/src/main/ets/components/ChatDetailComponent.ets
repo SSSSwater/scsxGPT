@@ -1,6 +1,7 @@
 import { ChatBox, ChatParamsObj, defaultChatBoxList, ChatStorage } from '../models/chatBox'
 import { postGPT } from '../tool/translateAxios';
 import { TitleBar } from './TitleBar';
+import { promptAction } from '@kit.ArkUI';
 import { router } from '@kit.ArkUI';
 
 
@@ -31,6 +32,7 @@ export struct ChatDetail {
     .border({ width: 1 })
     .backgroundColor(Color.Gray)
   }
+  @Link GPTCost:number;
   @State isShowSideBar: boolean = false;
   @State chatId: number = 0;
   @State input: string = "";
@@ -85,12 +87,14 @@ export struct ChatDetail {
         this.chatId = id
         this.chatBoxList = this.dataLoad(id)
         this.isShowSideBar = false
+        this.scroller.scrollEdge(Edge.Bottom,{velocity:9999})
+
       })
     }
     .width('90%')
     .height('20%')
     .backgroundColor(Color.White)
-    .border({ width: 2, color: Color.Pink,radius:10})
+    .border({ width: 2, color: this.chatId==id?Color.Pink:Color.White,radius:10})
     .fontColor(Color.Black)
     .margin({top:10})
 
@@ -181,66 +185,108 @@ export struct ChatDetail {
           .scrollBarWidth(10) // 设置滚动条宽度
           .scrollBar(BarState.On) // 设置滚动条永久显示
           .width('100%')
-          .height('85%')
+          .height('75%')
           .padding({
             top: 10,
             bottom: 10,
             left: 10,
             right: 10
           })
-          .backgroundColor('#e8e8e4')
+          .backgroundColor('#f0f0ed')
           .align(Alignment.Top)
 
 
-          Stack({alignContent:Alignment.End}) {
-            Row(){
-              TextArea({ placeholder: "请输入你想说的：", text: this.input })
-                .fontSize(22)
-                .height('100%')
-                .width('80%')
-                .fontColor(Color.Black)
-                .fontStyle(FontStyle.Italic)
-                .backgroundColor(Color.White)
-                .placeholderColor(Color.Gray)
-                .placeholderFont({
-                  size: 18,
-                  style: FontStyle.Italic
-                })
-                .onChange((msg) => {
-                  this.input = msg;
-                })
-                .id('chatInput')
-
-            }
-            .backgroundColor(Color.White)
-            .border({radius:20})
-            .width("90%")
-            .height('80%')
-            .margin('5%')
-
-              Button({ type: ButtonType.Normal }){
-              Image($r('app.media.ic_public_email_send'))
-                .width(30)
-                .height(30)
+          RelativeContainer(){
+            RelativeContainer(){
+              Column(){
+                Text("消耗额度:10")
+                Text("可用额度:" + this.GPTCost)
               }
-                .backgroundColor(Color.White)
-                .width("20%")
-                .height('70%')
-                .margin('7%')
-                .border({radius:15})
-                .onClick(() => {
-                  this.submit(this.input, this.chatId)
-                })
+              .alignRules({
+                right: { anchor: '__container__', align: HorizontalAlign.End }
+              })
+              .alignItems(HorizontalAlign.Start)
+              .justifyContent(FlexAlign.SpaceAround)
+              .width('30%')
+              .height('100%')
+            }
+            .height('40%')
 
+            Stack({alignContent:Alignment.End}) {
+              Row() {
+                TextArea({ placeholder: "请输入你想说的：", text: this.input })
+                  .fontSize(22)
+                  .height('100%')
+                  .width('80%')
+                  .fontColor(Color.Black)
+                  .fontStyle(FontStyle.Italic)
+                  .backgroundColor(Color.White)
+                  .placeholderColor(Color.Gray)
+                  .placeholderFont({
+                    size: 18,
+                    style: FontStyle.Italic
+                  })
+                  .onChange((msg) => {
+                    this.input = msg;
+                  })
+                  .id('chatInput')
+
+              }
+              .backgroundColor(Color.White)
+              .border({ radius: 20 })
+              .width("90%")
+              .height('80%')
+              .margin('5%')
+
+              Button({ type: ButtonType.Normal }) {
+                Image($r('app.media.ic_public_email_send'))
+                  .width(30)
+                  .height(30)
+
+              }
+              .backgroundColor(Color.White)
+              .width("20%")
+              .height('70%')
+              .margin('7%')
+              .border({ radius: 15 })
+              .onClick(() => {
+
+                if (this.input == '') {
+                  promptAction.showToast({
+                    message: '输入不能为空!',
+                    duration: 1600,
+                    bottom: 150
+                  }
+                  )
+                } else {
+                  if (this.GPTCost < 10) {
+                    promptAction.showToast({
+                      message: '免费版额度已用完!请支持专业版',
+                      duration: 1600,
+                      bottom: 150
+                    }
+                    )
+                  } else {
+                    this.submit(this.input, this.chatId)
+                  }
+                }
+              })
+            }
+            .width("100%")
+            .height("60%")
+            .alignRules({
+              bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
+            })
+            // .justifyContent(FlexAlign.SpaceAround)
+            // .alignItems(VerticalAlign.Center)
+            .id("sendButton")
           }
           .width("100%")
-          .height("15%")
+          .height("25%")
           .alignRules({
-            bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
+            bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
           })
-          // .justifyContent(FlexAlign.SpaceAround)
-          // .alignItems(VerticalAlign.Center)
-          .id("sendButton")
+
         }
         .height('90%')
         .width('100%')
@@ -257,14 +303,15 @@ export struct ChatDetail {
     })
     .sideBarPosition(SideBarPosition.End)
     .showSideBar(this.isShowSideBar)
+    .onChange((value) => {this.isShowSideBar = value})
     .height('100%')
     .width('100%')
-    .onChange((value) => {this.isShowSideBar = value})
     .backgroundColor('#e8e8e4')
   }
 
   async submit(message: string, chatId: number) {
 
+    this.GPTCost -= 10;
     let tempChatBox = this.dataLoad(chatId)
     //放入发送消息
 
@@ -272,12 +319,14 @@ export struct ChatDetail {
     this.dataSave(chatId, tempChatBox)
     this.chatBoxList = this.dataLoad(this.chatId)
     this.input = ""
+    this.scroller.scrollEdge(Edge.Bottom)
 
     //放入接接收消息
     const response: ChatBox = await askGPT(message,chatId)
     tempChatBox.push(response)
     this.dataSave(chatId, tempChatBox)
     this.chatBoxList = this.dataLoad(this.chatId)
+    this.scroller.scrollEdge(Edge.Bottom)
 
   }
 

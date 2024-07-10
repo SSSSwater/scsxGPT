@@ -40,8 +40,6 @@ struct Index {
 
   build() {
     Column() {
-      // 侧边栏
-
       // Tabs组件，用于展示多个Tab内容
       Tabs({
         barPosition: BarPosition.End,

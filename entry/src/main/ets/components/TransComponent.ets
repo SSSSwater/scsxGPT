@@ -70,7 +70,7 @@ export struct TransComponent {
         .scrollBarWidth(10) // 设置滚动条宽度
         .scrollBar(BarState.On) // 设置滚动条永久显示
         .width('100%')
-        .height('70%')
+        .height('75%')
         .padding({
           top: 10,
           bottom: 10,
@@ -80,45 +80,60 @@ export struct TransComponent {
         .backgroundColor('#e8e8e4')
         .align(Alignment.Top)
 
+        Column(){
+          Row({space:5}){
+              Select([{value:'中'},{value:'英'},{value:'日'}])
+                .selected(1)
+                .value('英')
+                .onSelect((index: number) => {
+                  this.transModeLeft = index
+                })
+              Text("译")
+              Select([{value:'中'},{value:'英'},{value:'日'}])
+                .selected(0)
+                .value('中')
+                .onSelect((index: number) => {
+                  this.transModeRight = index
+                })
+            }
+            .height('30%')
 
-        TextArea({ placeholder: "请输入想要翻译的内容：" })
-          .width("100%")
-          .height("20%")
-          .fontSize(22)
-          .fontColor(Color.Black)
-          .fontStyle(FontStyle.Italic)
-          .placeholderColor(Color.Gray)
-          .placeholderFont({
-            size: 18,
-            style: FontStyle.Italic
-          })
-          .onChange((msg) => {
-            this.input = msg;
-          })
-          .alignRules({
-            bottom: { anchor: 'sendButton', align: VerticalAlign.Top },
-          })
-          .id('transInput')
+          Stack({alignContent:Alignment.End}) {
+            Row(){
+              TextArea({ placeholder: "请输入想要翻译的内容：", text: this.input })
+                .fontSize(22)
+                .height('100%')
+                .width('80%')
+                .fontColor(Color.Black)
+                .fontStyle(FontStyle.Italic)
+                .backgroundColor(Color.White)
+                .placeholderColor(Color.Gray)
+                .placeholderFont({
+                  size: 18,
+                  style: FontStyle.Italic
+                })
+                .onChange((msg) => {
+                  this.input = msg;
+                })
+                .id('chatInput')
 
-        Row() {
-          Row(){
-            Select([{value:'中'},{value:'英'},{value:'日'}])
-              .selected(1)
-              .value('英')
-              .onSelect((index: number) => {
-                this.transModeLeft = index
-              })
-            Text("译")
-            Select([{value:'中'},{value:'英'},{value:'日'}])
-              .selected(0)
-              .value('中')
-              .onSelect((index: number) => {
-                this.transModeRight = index
-              })
-          }
-          Button('Translation')
-            .backgroundColor(Color.Pink)
-            .width("50%")
+            }
+            .backgroundColor(Color.White)
+            .border({radius:20})
+            .width("90%")
+            .height('80%')
+            .margin('5%')
+
+            Button({ type: ButtonType.Normal }){
+              Image($r('app.media.ic_public_translate_c2e'))
+                .width(30)
+                .height(30)
+            }
+            .backgroundColor(Color.White)
+            .width("20%")
+            .height('70%')
+            .margin('7%')
+            .border({radius:15})
             .onClick(() => {
               if (this.transModeLeft == this.transModeRight){
                 promptAction.showToast({
@@ -136,21 +151,93 @@ export struct TransComponent {
                 this.submit(this.input,this.transModeLeft,this.transModeRight)
               }
             })
+
+          }
+          .width("100%")
+          .height("70%")
+          .alignRules({
+            bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
+          })
+          // .justifyContent(FlexAlign.SpaceAround)
+          // .alignItems(VerticalAlign.Center)
+          .id("sendButton")
         }
-        .justifyContent(FlexAlign.SpaceAround)
-        .alignItems(VerticalAlign.Center)
         .width("100%")
-        .height("10%")
+        .height("25%")
         .alignRules({
           bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
         })
-        .id("sendButton")
+        //
+        // TextArea({ placeholder: "请输入想要翻译的内容：" })
+        //   .width("100%")
+        //   .height("20%")
+        //   .fontSize(22)
+        //   .fontColor(Color.Black)
+        //   .fontStyle(FontStyle.Italic)
+        //   .placeholderColor(Color.Gray)
+        //   .placeholderFont({
+        //     size: 18,
+        //     style: FontStyle.Italic
+        //   })
+        //   .onChange((msg) => {
+        //     this.input = msg;
+        //   })
+        //   .alignRules({
+        //     bottom: { anchor: 'sendButton', align: VerticalAlign.Top },
+        //   })
+        //   .id('transInput')
+        //
+        // Row() {
+        //   Row(){
+        //     Select([{value:'中'},{value:'英'},{value:'日'}])
+        //       .selected(1)
+        //       .value('英')
+        //       .onSelect((index: number) => {
+        //         this.transModeLeft = index
+        //       })
+        //     Text("译")
+        //     Select([{value:'中'},{value:'英'},{value:'日'}])
+        //       .selected(0)
+        //       .value('中')
+        //       .onSelect((index: number) => {
+        //         this.transModeRight = index
+        //       })
+        //   }
+        //   Button('Translation')
+        //     .backgroundColor(Color.Pink)
+        //     .width("50%")
+        //     .onClick(() => {
+        //       if (this.transModeLeft == this.transModeRight){
+        //         promptAction.showToast({
+        //           message:'不能选同种语言',
+        //           duration:1600,
+        //           bottom:150}
+        //         )
+        //       } else if (this.transModeLeft * this.transModeRight !=0){
+        //         promptAction.showToast({
+        //           message:'暂不支持英日互译',
+        //           duration:1600,
+        //           bottom:150}
+        //         )
+        //       }else{
+        //         this.submit(this.input,this.transModeLeft,this.transModeRight)
+        //       }
+        //     })
+        // }
+        // .justifyContent(FlexAlign.SpaceAround)
+        // .alignItems(VerticalAlign.Center)
+        // .width("100%")
+        // .height("10%")
+        // .alignRules({
+        //   bottom: { anchor: '__container__', align: VerticalAlign.Bottom }
+        // })
+        // .id("sendButton")
 
       }
       .height('90%')
     }
 
-
+    .backgroundColor('#e8e8e4')
     .height('100%')
     .width('100%')
   }

@@ -7,8 +7,8 @@
       Stack({alignContent: Alignment.Start}) {  // 返回键左对齐
         if (this.titleBarAttribute && this.titleBarAttribute.backShow){
           Image($r("app.media.ic_public_back"))
-            .width(40)
-            .height(40)
+            .width(35)
+            .height(35)
             .objectFit(ImageFit.Contain)
             .padding(5)
             .margin({left: 10})
@@ -25,15 +25,16 @@
         if (this.titleBarAttribute && this.titleBarAttribute.title) {
 
           Text(this.titleBarAttribute.title)
-            .fontSize(25)
-            .fontColor(Color.White)
+            .fontSize(20)
+            .fontFamily('dx')
         }
       }
-      .layoutWeight(5)
+      .layoutWeight(6)
     }
     .width('100%')
     .height(70)
-    .backgroundColor(Color.Pink)
+    .backgroundColor(Color.White)
+
   }
 }
 

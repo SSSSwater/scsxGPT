@@ -1,7 +1,5 @@
 import { ChatBox, ChatParamsObj, defaultChatBoxList, ChatStorage } from '../models/chatBox'
-import axios, { AxiosError, AxiosResponse } from '@ohos/axios'
 import { postGPT } from '../tool/translateAxios';
-import { HashMap } from '@kit.ArkTS';
 import { TitleBar } from './TitleBar';
 
 
@@ -62,6 +60,7 @@ export struct ChatDetail {
           .fontColor(Color.Gray)
           .fontStyle(FontStyle.Italic)
           .height('70%')
+          .margin({top:10})
       }
       .padding(15)
       .height('100%')
@@ -73,11 +72,13 @@ export struct ChatDetail {
         this.isShowSideBar = false
       })
     }
-    .width('100%')
+    .width('90%')
     .height('20%')
     .backgroundColor(Color.White)
-    .border({ width: { top: 1, bottom: 1 }, color: Color.Gray, radius: 0 })
+    .border({ width: 2, color: Color.Pink,radius:10})
     .fontColor(Color.Black)
+    .margin({top:10})
+
   }
 
   build() {
@@ -87,6 +88,16 @@ export struct ChatDetail {
       RelativeContainer() {
         Column() {
 
+          TitleBar({
+            titleBarAttribute: {
+              title: "聊天列表",
+              backShow: false, // 显示菜单
+              backCallback: () => { // 设置点击回调
+                console.log("shoudao!")
+                //返回主页
+              }
+            }
+          })
           Button({ type: ButtonType.Normal }) {
             Row() {
               Image($r("app.media.ic_public_add"))
@@ -95,9 +106,7 @@ export struct ChatDetail {
                 .fontSize(20)
                 .alignSelf(ItemAlign.Start)
             }
-            .width('50%')
             .onClick(() => {
-              // let newId = getMaxId(this.chatBoxStorageArray)+1
               this.createChat()
             })
           }
@@ -106,8 +115,13 @@ export struct ChatDetail {
           .fontSize(20)
           .backgroundColor(Color.White)
           .fontColor(Color.Black)
-          .width('100%')
+          .width('90%')
           .height('12%')
+          .backgroundColor(Color.White)
+          .border({radius:10})
+          .fontColor(Color.Black)
+          .fontFamily('dx')
+          .margin({top:10})
 
           ForEach(this.chatStorage, (item: ChatStorage) => {
 
@@ -116,10 +130,9 @@ export struct ChatDetail {
         }
         .width("100%")
         .height("60%")
-        .margin({ top: '50%' })
 
       }
-      .backgroundColor(Color.White)
+      .backgroundColor('#f0f0ed')
 
       //主界面
       Column() {
@@ -148,7 +161,7 @@ export struct ChatDetail {
           .scrollBarWidth(10) // 设置滚动条宽度
           .scrollBar(BarState.On) // 设置滚动条永久显示
           .width('100%')
-          .height('75%')
+          .height('85%')
           .padding({
             top: 10,
             bottom: 10,
@@ -158,42 +171,55 @@ export struct ChatDetail {
           .backgroundColor('#e8e8e4')
           .align(Alignment.Top)
 
-          TextArea({ placeholder: "请输入你想说的：", text: this.input })
-            .width("100%")
-            .height("15%")
-            .fontSize(22)
-            .fontColor(Color.Black)
-            .fontStyle(FontStyle.Italic)
-            .placeholderColor(Color.Gray)
-            .placeholderFont({
-              size: 18,
-              style: FontStyle.Italic
-            })
-            .onChange((msg) => {
-              this.input = msg;
-            })
-            .alignRules({
-              bottom: { anchor: 'sendButton', align: VerticalAlign.Top },
-            })
-            .id('chatInput')
 
+          Stack({alignContent:Alignment.End}) {
+            Row(){
+              TextArea({ placeholder: "请输入你想说的：", text: this.input })
+                .fontSize(22)
+                .height('100%')
+                .width('80%')
+                .fontColor(Color.Black)
+                .fontStyle(FontStyle.Italic)
+                .backgroundColor(Color.White)
+                .placeholderColor(Color.Gray)
+                .placeholderFont({
+                  size: 18,
+                  style: FontStyle.Italic
+                })
+                .onChange((msg) => {
+                  this.input = msg;
+                })
+                .id('chatInput')
 
-          Row() {
-            Button('Send')
-              .backgroundColor(Color.Pink)
-              .width("90%")
-              .onClick(() => {
-                this.submit(this.input, this.chatId)
+            }
+            .backgroundColor(Color.White)
+            .border({radius:20})
+            .width("90%")
+            .height('80%')
+            .margin('5%')
 
-              })
+              Button({ type: ButtonType.Normal }){
+              Image($r('app.media.ic_public_email_send'))
+                .width(30)
+                .height(30)
+              }
+                .backgroundColor(Color.White)
+                .width("20%")
+                .height('70%')
+                .margin('7%')
+                .border({radius:15})
+                .onClick(() => {
+                  this.submit(this.input, this.chatId)
+                })
+
           }
           .width("100%")
-          .height("10%")
+          .height("15%")
           .alignRules({
             bottom: { anchor: '__container__', align: VerticalAlign.Bottom },
           })
-          .justifyContent(FlexAlign.SpaceAround)
-          .alignItems(VerticalAlign.Center)
+          // .justifyContent(FlexAlign.SpaceAround)
+          // .alignItems(VerticalAlign.Center)
           .id("sendButton")
         }
         .height('90%')
@@ -204,7 +230,7 @@ export struct ChatDetail {
     .controlButton({
       top: 20,
       icons: {
-        shown: $r("app.media.ic_public_history"),
+        shown:  $r("app.media.ic_public_history"),
         hidden: $r("app.media.ic_public_history"),
         switching: $r("app.media.ic_public_history")
       }
@@ -214,6 +240,7 @@ export struct ChatDetail {
     .height('100%')
     .width('100%')
     .onChange((value) => {this.isShowSideBar = value})
+    .backgroundColor('#e8e8e4')
   }
 
   async submit(message: string, chatId: number) {

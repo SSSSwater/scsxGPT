@@ -2,6 +2,8 @@ import { ChatDetail } from '../components/ChatDetailComponent'
 import { TransComponent } from '../components/TransComponent'
 import { tabsModel } from '../models/tabsModel'
 import {inforComponent} from  '../components/InforComponent'
+import { router, Router } from '@kit.ArkUI'
+
 @Entry
 @Component
 struct Index {
@@ -70,5 +72,9 @@ struct Index {
     }
     .height('100%')
     .width('100%')
+  }
+  aboutToAppear(): void {
+    const params : object = router.getParams()
+    this.currentIndex = params?.['current']
   }
 }

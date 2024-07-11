@@ -12,7 +12,7 @@ import { router } from '@kit.ArkUI';
   .backgroundColor(Color.White)
   .fontColor(Color.Black)
   .width('90%')
-  .height('12%')
+  .height('10%')
   .backgroundColor(Color.White)
   .border({radius:10})
   .fontColor(Color.Black)
@@ -36,7 +36,8 @@ export struct ChatDetail {
   @State isShowSideBar: boolean = false;
   @State chatId: number = 0;
   @State input: string = "";
-  private scroller: Scroller = new Scroller(); // 创建一个滚动控制器
+  private scroller: Scroller = new Scroller();
+  private sideScroller: Scroller = new Scroller();
   @State chatIdList: number[] = [];
   @State chatBoxList: ChatBox[] = defaultChatBoxList;
   // 聊天本地数据存储
@@ -133,27 +134,42 @@ export struct ChatDetail {
           })
           .contactButton()
 
-          ForEach(this.chatStorage, (item: ChatStorage) => {
+          Scroll(this.sideScroller){
+            Column() {
+              ForEach(this.chatStorage, (item: ChatStorage) => {
 
-            this.chatListBuilder(item.lastMsg, item.msgNum, item.id)
-          })
+                this.chatListBuilder(item.lastMsg, item.msgNum, item.id)
+              })
 
-          Button({ type: ButtonType.Normal }) {
-            Row() {
-              Image($r("app.media.ic_public_add"))
-                .iconStyle()
-              Text("创建新聊天")
-                .fontSize(20)
-                .alignSelf(ItemAlign.Start)
+              Button({ type: ButtonType.Normal }) {
+                Row() {
+                  Image($r("app.media.ic_public_add"))
+                    .iconStyle()
+                  Text("创建新聊天")
+                    .fontSize(20)
+                    .alignSelf(ItemAlign.Start)
+                }
+              }
+              .onClick(() => {
+                this.createChat()
+                this.sideScroller.scrollEdge(Edge.Bottom)
+              })
+              .contactButton()
             }
+            .width("100%")
+
           }
-          .onClick(() => {
-            this.createChat()
-          })
-          .contactButton()
+          .scrollable(ScrollDirection.Vertical) // 设置竖直方向滚动
+          .scrollBarColor(Color.Gray) // 设置滚动条颜色
+          .scrollBarWidth(10) // 设置滚动条宽度
+          .scrollBar(BarState.On) // 永久设置滚动条显示
+          .width("100%")
+          .height("75%")
+          .margin({top:10})
+          .backgroundColor('#f0f0ed')
+          .align(Alignment.Top)
+
         }
-        .width("100%")
-        .height("60%")
 
       }
       .backgroundColor('#F1F3F5')
@@ -166,7 +182,6 @@ export struct ChatDetail {
             title: "GPT聊天",
             backShow: true, // 显示菜单
             backCallback: () => { // 设置点击回调
-              console.log("shoudao!")
               //返回主页
               router.back();
             }
@@ -292,6 +307,9 @@ export struct ChatDetail {
         .height('90%')
         .width('100%')
       }
+      .onClick(()=>{
+        this.isShowSideBar=false
+      })
 
     }
     .controlButton({
@@ -303,7 +321,7 @@ export struct ChatDetail {
       }
     })
     .sideBarPosition(SideBarPosition.End)
-    .showSideBar(this.isShowSideBar)
+    .showSideBar(this.isShowSideBar).divider({ strokeWidth: '1vp', color: '#e8e8e4'})
     .onChange((value) => {this.isShowSideBar = value})
     .height('100%')
     .width('100%')

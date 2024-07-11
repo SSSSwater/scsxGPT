@@ -100,7 +100,10 @@ struct Main {
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .onClick(() => {
             router.pushUrl({
-              url: 'pages/Index'
+              url: 'pages/Index',
+              params:{
+                current:0
+              }
             });
           })
 
@@ -118,7 +121,10 @@ struct Main {
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .onClick(() => {
             router.pushUrl({
-              url: 'pages/Index'
+              url: 'pages/Index',
+              params:{
+                current:1
+              }
             });
           })
 
@@ -136,7 +142,10 @@ struct Main {
           .backgroundColor($r('sys.color.comp_background_list_card'))
           .onClick(() => {
             router.pushUrl({
-              url: 'pages/Index'
+              url: 'pages/Index',
+              params:{
+                current:2
+              }
             });
           })
 

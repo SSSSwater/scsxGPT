@@ -1,6 +1,6 @@
 import { TransBox, defaultTransBoxList, TransParamsObj} from '../models/transBox'
 import { postTranslate } from '../tool/translateAxios';
-import { promptAction } from '@kit.ArkUI';
+import { promptAction, router } from '@kit.ArkUI';
 import { TitleBar } from './TitleBar';
 import { it } from '@ohos/hypium';
 
@@ -74,8 +74,8 @@ export struct TransComponent {
           title: "翻译",
           backShow: true, // 显示菜单
           backCallback: () => { // 设置点击回调
-            console.log("shoudao!2")
             //返回主页
+            router.back();
           }
         }
       })

@@ -89,7 +89,7 @@ struct Login{
                       bottom:150}
                     )
                   // 跳转到我的页面。
-                 router.pushUrl({url:"pages/Index"})//wait主页
+                 router.pushUrl({url:"pages/Main"})//wait主页
 
                 }else{
                   promptAction.showToast({

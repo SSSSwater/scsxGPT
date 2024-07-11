@@ -219,7 +219,7 @@ struct Main {
                 }
                 this.data = this.dataStrings
 
-              }, 2000);
+              }, 1000);
             });
           },
           // 可选项，上拉加载更多回调
@@ -228,9 +228,11 @@ struct Main {
               // 模拟网络请求操作，请求网络2秒后得到数据，通知组件，变更列表数据
               setTimeout(() => {
                 resolve('');
-                let randomNumber: number = Math.floor(Math.random() * this.dataMores.length);
-                this.data.push(this.dataMores[randomNumber])
-              }, 2000);
+                for (let index = 0; index < 3; index++) {
+                  let randomNumber: number = Math.floor(Math.random() * this.dataMores.length);
+                  this.data.push(this.dataMores[randomNumber])
+                }
+              }, 500);
             });
           },
           customLoad: null,

@@ -55,7 +55,7 @@ struct Main {
   }
 
   build() {
-    Column() {
+    RelativeContainer() {
       // 标题
       Row() {
         Text('欢迎使用scsxGPT')
@@ -68,6 +68,7 @@ struct Main {
       .width('100%')
       .height(70)
       .backgroundColor($r('sys.color.brand'))
+      .id("title")
 
       // 轮播图
       Swiper() {
@@ -77,7 +78,7 @@ struct Main {
           .width('100%')
         Image($r("app.media.new_free"))
           .width('100%')
-      }
+      }.alignRules({top:{anchor:"title",align:VerticalAlign.Bottom}})
       .autoPlay(true)
       .indicator( // 设置圆点导航点样式
         new DotIndicator()
@@ -89,6 +90,8 @@ struct Main {
           .selectedColor('sys.color.brand')
       )
       .margin(5)
+      .id("Swiper")
+
 
       // 功能按钮
       Row() {
@@ -158,6 +161,7 @@ struct Main {
       }
       .margin(5)
       .height(70)
+      .alignRules({top:{anchor:"Swiper",align:VerticalAlign.Bottom}})
 
       // 资讯栏
       Column() {
@@ -206,7 +210,8 @@ struct Main {
           customRefresh: null,
         })
           .margin('2%')
-      }
+      }.alignRules({bottom:{anchor:"__container__",align:VerticalAlign.Bottom}}).height("70%")
+
 
     }
     .backgroundColor('#F1F3F5')

@@ -68,7 +68,6 @@ export struct TransComponent {
   }
   build() {
     Column(){
-
       TitleBar({
         titleBarAttribute: {
           title: "翻译",

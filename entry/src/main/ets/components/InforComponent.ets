@@ -25,14 +25,12 @@ export struct inforComponent {
 
   build() {
     Column() {
-
-
       TitleBar({
         titleBarAttribute: {
           title: "个人信息",
           backShow: true, // 显示菜单
           backCallback: () => { // 设置点击回调
-            //返回主页
+            // 返回主页
             router.back();
           }
         }

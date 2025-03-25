@@ -370,7 +370,6 @@ export struct ChatDetail {
     AppStorage.setOrCreate("Chat" + chatId, chatBoxList)
     this.chatStorage[chatId] =
       { msgNum: chatBoxList.length, lastMsg: this.getLatestMsgFromData(chatBoxList), id: chatId }
-
     AppStorage.setOrCreate("ChatList", this.chatIdList)
   }
 

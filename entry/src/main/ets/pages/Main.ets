@@ -102,7 +102,7 @@ struct Main {
       .alignRules({ top: { anchor: "title", align: VerticalAlign.Bottom } })
       .autoPlay(true)
       .indicator( // 设置圆点导航点样式
-        new DotIndicator()
+        new DotIndicator()//写一篇500字的关于实习的日记
           .itemWidth(8)
           .itemHeight(8)
           .selectedItemWidth(8)
@@ -153,7 +153,7 @@ struct Main {
           })
 
           Text('翻译')
-        }
+        }//你好
         .margin('10%')
         .width('10%')
         .height('40%')
@@ -267,5 +267,7 @@ struct Main {
     .backgroundColor(Color.White)
     .divider({ strokeWidth: 1, color: 0x222222 })
     .edgeEffect(EdgeEffect.None) // 必须设置列表为滑动到边缘无效果
+    //请写一个500字的关于生产实习的日记
+    //
   }
 }
